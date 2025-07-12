@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: VleApi
+  profiles:
+    active: postgres
+  config:
+    import: optional:classpath:application-secrets.yml
