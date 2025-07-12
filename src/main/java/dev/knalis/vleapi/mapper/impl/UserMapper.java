@@ -15,6 +15,7 @@ public class UserMapper implements ObjectMapper<User, UserDto, CreateUserRequest
         UserDto dto = new UserDto();
         dto.setId(user.getId());
         dto.setUsername(user.getUsername());
+        dto.setAvatarUrl(user.getAvatarUrl());
         dto.setRole(user.getRole());
         if (user.getGroup() != null) {
             dto.setGroupId(user.getGroup().getId());
@@ -44,5 +45,10 @@ public class UserMapper implements ObjectMapper<User, UserDto, CreateUserRequest
         if (dto.getRole() != null) {
             user.setRole(dto.getRole());
         }
+
+        if (dto.getAvatarUrl() != null) {
+            user.setAvatarUrl(dto.getAvatarUrl());
+        }
+
     }
 }

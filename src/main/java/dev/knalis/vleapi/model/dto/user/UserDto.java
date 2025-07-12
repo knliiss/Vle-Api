@@ -9,6 +9,9 @@ import java.util.List;
 public class UserDto {
     private Long id;
     private String username;
+
+    private String avatarUrl;
+
     private Role role;
 
     private Long groupId;

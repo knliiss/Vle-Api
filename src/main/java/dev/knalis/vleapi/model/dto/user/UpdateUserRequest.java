@@ -10,6 +10,8 @@ public class UpdateUserRequest {
 
     private String password;
 
+    private String avatarUrl;
+
     private Role role;
 
 }
