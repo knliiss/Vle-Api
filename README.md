@@ -50,6 +50,18 @@ spring:
 ```yaml
 jwt:
   secret: your-super-secret-key
+  
+cloud:
+  aws:
+    credentials:
+      access-key: YOUR_ACCESS_KEY
+      secret-key: YOUR_SECRET_KEY
+    region:
+      static: YOUR_BUCKET_REGION
+    stack:
+      auto: false
+  s3:
+    bucket: YOUR_BUCKET_NAME
 ```
 
 І додай до .gitignore:

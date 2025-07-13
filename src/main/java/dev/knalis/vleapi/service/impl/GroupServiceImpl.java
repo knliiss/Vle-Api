@@ -19,6 +19,11 @@ public class GroupServiceImpl extends AbstractCRUDService<Group, Long> implement
     }
 
     @Override
+    protected Class<Group> getEntityClass() {
+        return Group.class;
+    }
+
+    @Override
     public Group findByName(String name) {
         return groupRepo.findByName(name).orElseThrow();
     }

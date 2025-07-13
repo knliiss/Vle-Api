@@ -48,6 +48,11 @@ public class UserServiceImpl extends AbstractCRUDService<User, Long> implements 
     }
 
     @Override
+    protected Class<User> getEntityClass() {
+        return User.class;
+    }
+
+    @Override
     public User findByUsername(String username) {
         return userRepo.findByUsername(username).orElseThrow();
     }

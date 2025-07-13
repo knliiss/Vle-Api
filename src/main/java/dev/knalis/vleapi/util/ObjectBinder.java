@@ -26,6 +26,10 @@ public class ObjectBinder {
         User user = userService.findById(userId);
         Group group = groupService.findById(groupId);
 
+        if (user.getGroup() != null) {
+            throw new IllegalArgumentException("User is already part of a group");
+        }
+
         group.addUser(user);
 
         userService.update(user);
@@ -50,6 +54,47 @@ public class ObjectBinder {
 
         course.addTopic(topic);
 
+        topicService.update(topic);
+        courseService.update(course);
+    }
+
+    @Transactional
+    public void unbindUserFromGroup(Long userId, Long groupId) {
+        User user = userService.findById(userId);
+        Group group = groupService.findById(groupId);
+
+        if (!group.getUsers().contains(user)) {
+            throw new IllegalArgumentException("User is not part of the group");
+        }
+        group.getUsers().remove(user);
+        user.setGroup(null);
+
+        userService.update(user);
+        groupService.update(group);
+    }
+
+    @Transactional
+    public void unbindCourseFromGroup(Long courseId, Long groupId) {
+        Group group = groupService.findById(groupId);
+        Course course = courseService.findById(courseId);
+
+        if (!group.getCourses().contains(course)) {
+            throw new IllegalArgumentException("Course is not part of the group");
+        }
+        group.getCourses().remove(course);
+
+        courseService.update(course);
+        groupService.update(group);
+    }
+
+    @Transactional
+    public void unbindTopicFromCourse(Long topicId, Long courseId) {
+        Course course = courseService.findById(courseId);
+        Topic topic = topicService.findById(topicId);
+        if (!course.getTopics().contains(topic)) {
+            throw new IllegalArgumentException("Topic is not part of the course");
+        }
+        course.getTopics().remove(topic);
         topicService.update(topic);
         courseService.update(course);
     }

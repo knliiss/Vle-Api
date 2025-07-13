@@ -19,6 +19,7 @@ public class TopicMapper implements ObjectMapper<Topic, TopicDto, CreateTopicReq
         if (topic.getCourse() != null) {
             dto.setCourseId(topic.getCourse().getId());
         }
+        dto.setFileUrls(topic.getFileUrls());
         return dto;
     }
 

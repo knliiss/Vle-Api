@@ -3,6 +3,9 @@ package dev.knalis.vleapi.model.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,4 +23,9 @@ public class Topic {
     @ManyToOne
     @JoinColumn(name = "course_id")
     private Course course;
+
+    @ElementCollection
+    @CollectionTable(name = "topic_files", joinColumns = @JoinColumn(name = "topic_id"))
+    @Column(name = "file_url")
+    private List<String> fileUrls = new ArrayList<>();
 }

@@ -13,13 +13,11 @@ import dev.knalis.vleapi.model.entity.Course;
 import dev.knalis.vleapi.model.entity.user.User;
 import dev.knalis.vleapi.service.intrf.CRUDService;
 import dev.knalis.vleapi.service.intrf.UserService;
+import dev.knalis.vleapi.util.ObjectBinder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -33,6 +31,7 @@ public class UserController extends AbstractCRUDController<User, UserDto, Create
     private final UserService userService;
     private final UserMapper userMapper;
     private final CourseMapper courseMapper;
+    private final ObjectBinder objectBinder;
 
     @Override
     protected CRUDService<User, Long> getService() {
@@ -47,6 +46,16 @@ public class UserController extends AbstractCRUDController<User, UserDto, Create
     @Override
     protected String getRestUrl() {
         return USER_REST_URL;
+    }
+
+    @Override
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        User user = userService.findById(id);
+        Long groupId = user.getGroup().getId();
+        objectBinder.unbindUserFromGroup(id, groupId);
+
+        return super.delete(id);
     }
 
     @GetMapping("/me/courses")
@@ -72,4 +81,5 @@ public class UserController extends AbstractCRUDController<User, UserDto, Create
                 .toList();
         return ResponseEntity.ok(courseDtos);
     }
+
 }

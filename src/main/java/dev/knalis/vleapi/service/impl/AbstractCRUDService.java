@@ -1,5 +1,6 @@
 package dev.knalis.vleapi.service.impl;
 
+import dev.knalis.vleapi.exception.custom.EntityNotFoundException;
 import dev.knalis.vleapi.service.intrf.CRUDService;
 import org.springframework.data.repository.CrudRepository;
 
@@ -9,6 +10,7 @@ import java.util.List;
 public abstract class AbstractCRUDService<E, K> implements CRUDService<E, K> {
 
     abstract CrudRepository<E, K> getRepository();
+    protected abstract Class<E> getEntityClass();
 
     @Override
     public boolean existsById(K id) {
@@ -34,7 +36,8 @@ public abstract class AbstractCRUDService<E, K> implements CRUDService<E, K> {
 
     @Override
     public E findById(K id) {
-        return getRepository().findById(id).orElse(null);
+        return getRepository().findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(getEntityClass().getSimpleName() + " with id " + id + " not found"));
     }
 
     @Override

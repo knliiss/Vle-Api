@@ -19,6 +19,11 @@ public class CourseServiceImpl extends AbstractCRUDService<Course, Long> impleme
     }
 
     @Override
+    protected Class<Course> getEntityClass() {
+        return Course.class;
+    }
+
+    @Override
     public Course findByName(String name) {
         return courseRepo.findByName(name).orElseThrow();
     }

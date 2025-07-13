@@ -19,6 +19,11 @@ public class TopicServiceImpl extends AbstractCRUDService<Topic, Long> implement
     }
 
     @Override
+    protected Class<Topic> getEntityClass() {
+        return Topic.class;
+    }
+
+    @Override
     public Long getId(Topic created) {
         return created.getId();
     }
