@@ -1,5 +1,6 @@
 package dev.knalis.vleapi.model.entity;
 
+import dev.knalis.vleapi.model.entity.task.Task;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,4 +29,12 @@ public class Topic {
     @CollectionTable(name = "topic_files", joinColumns = @JoinColumn(name = "topic_id"))
     @Column(name = "file_url")
     private List<String> fileUrls = new ArrayList<>();
+
+
+    @OneToMany(mappedBy = "Topic", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Task> tasks = new ArrayList<>();
+
+    public double getTopicMark() {
+        return tasks.stream().mapToDouble(Task::getMark).sum();
+    }
 }

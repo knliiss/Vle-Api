@@ -5,9 +5,11 @@ import lombok.Data;
 
 
 @Data
-public class CreateCourseRequest {
+public class CourseUpdateRequest {
+
     @NotBlank
     private String name;
+
     @NotBlank
     private String description;
 }

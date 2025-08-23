@@ -4,7 +4,7 @@ import dev.knalis.vleapi.model.entity.user.Role;
 import lombok.Data;
 
 @Data
-public class UpdateUserRequest {
+public class UserUpdateRequest {
 
     private String username;
 

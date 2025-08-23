@@ -4,9 +4,9 @@ import dev.knalis.vleapi.controller.AbstractCRUDController;
 import dev.knalis.vleapi.mapper.impl.GroupMapper;
 import dev.knalis.vleapi.mapper.impl.UserMapper;
 import dev.knalis.vleapi.mapper.intrf.ObjectMapper;
-import dev.knalis.vleapi.model.dto.group.CreateGroupRequest;
+import dev.knalis.vleapi.model.dto.group.GroupCreateRequest;
 import dev.knalis.vleapi.model.dto.group.GroupDto;
-import dev.knalis.vleapi.model.dto.group.UpdateGroupRequest;
+import dev.knalis.vleapi.model.dto.group.GroupUpdateRequest;
 import dev.knalis.vleapi.model.dto.user.UserDto;
 import dev.knalis.vleapi.model.entity.Course;
 import dev.knalis.vleapi.model.entity.Group;
@@ -23,7 +23,7 @@ import java.util.List;
 @RestController
 @RequestMapping(GroupController.GROUP_REST_URL)
 @RequiredArgsConstructor
-public class GroupController extends AbstractCRUDController<Group, GroupDto, CreateGroupRequest, UpdateGroupRequest, Long> {
+public class GroupController extends AbstractCRUDController<Group, GroupDto, GroupCreateRequest, GroupUpdateRequest, Long> {
 
     public static final String GROUP_REST_URL = "/api/v1/groups";
     private final GroupMapper groupMapper;
@@ -38,7 +38,7 @@ public class GroupController extends AbstractCRUDController<Group, GroupDto, Cre
     }
 
     @Override
-    protected ObjectMapper<Group, GroupDto, CreateGroupRequest, UpdateGroupRequest> getMapper() {
+    protected ObjectMapper<Group, GroupDto, GroupCreateRequest, GroupUpdateRequest> getMapper() {
         return groupMapper;
     }
 

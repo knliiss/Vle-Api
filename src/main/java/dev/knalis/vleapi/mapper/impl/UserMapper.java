@@ -1,14 +1,14 @@
 package dev.knalis.vleapi.mapper.impl;
 
 import dev.knalis.vleapi.mapper.intrf.ObjectMapper;
-import dev.knalis.vleapi.model.dto.user.CreateUserRequest;
-import dev.knalis.vleapi.model.dto.user.UpdateUserRequest;
+import dev.knalis.vleapi.model.dto.user.UserCreateRequest;
+import dev.knalis.vleapi.model.dto.user.UserUpdateRequest;
 import dev.knalis.vleapi.model.dto.user.UserDto;
 import dev.knalis.vleapi.model.entity.user.User;
 import org.springframework.stereotype.Component;
 
 @Component
-public class UserMapper implements ObjectMapper<User, UserDto, CreateUserRequest, UpdateUserRequest> {
+public class UserMapper implements ObjectMapper<User, UserDto, UserCreateRequest, UserUpdateRequest> {
 
     @Override
     public UserDto toDto(User user) {
@@ -26,7 +26,7 @@ public class UserMapper implements ObjectMapper<User, UserDto, CreateUserRequest
     }
 
     @Override
-    public User fromCreateRequest(CreateUserRequest dto) {
+    public User fromCreateRequest(UserCreateRequest dto) {
         User user = new User();
         user.setUsername(dto.getUsername());
         user.setPassword(dto.getPassword());
@@ -35,7 +35,7 @@ public class UserMapper implements ObjectMapper<User, UserDto, CreateUserRequest
     }
 
     @Override
-    public void updateEntity(User user, UpdateUserRequest dto) {
+    public void updateEntity(User user, UserUpdateRequest dto) {
         if (dto.getUsername() != null) {
             user.setUsername(dto.getUsername());
         }

@@ -2,15 +2,15 @@ package dev.knalis.vleapi.mapper.impl;
 
 import dev.knalis.vleapi.mapper.intrf.ObjectMapper;
 import dev.knalis.vleapi.model.dto.course.CourseDto;
-import dev.knalis.vleapi.model.dto.course.CreateCourseRequest;
-import dev.knalis.vleapi.model.dto.course.UpdateCourseRequest;
+import dev.knalis.vleapi.model.dto.course.CourseCreateRequest;
+import dev.knalis.vleapi.model.dto.course.CourseUpdateRequest;
 import dev.knalis.vleapi.model.entity.Course;
 import dev.knalis.vleapi.model.entity.Group;
 import dev.knalis.vleapi.model.entity.Topic;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CourseMapper implements ObjectMapper<Course, CourseDto, CreateCourseRequest, UpdateCourseRequest> {
+public class CourseMapper implements ObjectMapper<Course, CourseDto, CourseCreateRequest, CourseUpdateRequest> {
 
     @Override
     public CourseDto toDto(Course course) {
@@ -23,7 +23,7 @@ public class CourseMapper implements ObjectMapper<Course, CourseDto, CreateCours
     }
 
     @Override
-    public Course fromCreateRequest(CreateCourseRequest dto) {
+    public Course fromCreateRequest(CourseCreateRequest dto) {
         Course course = new Course();
         course.setName(dto.getName());
         course.setDescription(dto.getDescription());
@@ -31,12 +31,12 @@ public class CourseMapper implements ObjectMapper<Course, CourseDto, CreateCours
     }
 
     @Override
-    public void updateEntity(Course course, UpdateCourseRequest updateCourseRequest) {
-        if (updateCourseRequest.getName() != null) {
-            course.setName(updateCourseRequest.getName());
+    public void updateEntity(Course course, CourseUpdateRequest courseUpdateRequest) {
+        if (courseUpdateRequest.getName() != null) {
+            course.setName(courseUpdateRequest.getName());
         }
-        if (updateCourseRequest.getDescription() != null) {
-            course.setDescription(updateCourseRequest.getDescription());
+        if (courseUpdateRequest.getDescription() != null) {
+            course.setDescription(courseUpdateRequest.getDescription());
         }
     }
 }

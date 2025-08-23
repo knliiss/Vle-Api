@@ -1,16 +1,16 @@
 package dev.knalis.vleapi.mapper.impl;
 
 import dev.knalis.vleapi.mapper.intrf.ObjectMapper;
-import dev.knalis.vleapi.model.dto.group.CreateGroupRequest;
+import dev.knalis.vleapi.model.dto.group.GroupCreateRequest;
 import dev.knalis.vleapi.model.dto.group.GroupDto;
-import dev.knalis.vleapi.model.dto.group.UpdateGroupRequest;
+import dev.knalis.vleapi.model.dto.group.GroupUpdateRequest;
 import dev.knalis.vleapi.model.entity.Course;
 import dev.knalis.vleapi.model.entity.Group;
 import dev.knalis.vleapi.model.entity.user.User;
 import org.springframework.stereotype.Component;
 
 @Component
-public class GroupMapper implements ObjectMapper<Group, GroupDto, CreateGroupRequest, UpdateGroupRequest> {
+public class GroupMapper implements ObjectMapper<Group, GroupDto, GroupCreateRequest, GroupUpdateRequest> {
 
     @Override
     public GroupDto toDto(Group group) {
@@ -24,7 +24,7 @@ public class GroupMapper implements ObjectMapper<Group, GroupDto, CreateGroupReq
     }
 
     @Override
-    public Group fromCreateRequest(CreateGroupRequest request) {
+    public Group fromCreateRequest(GroupCreateRequest request) {
         Group group = new Group();
         group.setName(request.getName());
         group.setYear(request.getYear());
@@ -32,7 +32,7 @@ public class GroupMapper implements ObjectMapper<Group, GroupDto, CreateGroupReq
     }
 
     @Override
-    public void updateEntity(Group group, UpdateGroupRequest request) {
+    public void updateEntity(Group group, GroupUpdateRequest request) {
         if (request.getName() != null) {
             group.setName(request.getName());
         }

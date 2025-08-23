@@ -4,8 +4,8 @@ import dev.knalis.vleapi.controller.AbstractCRUDController;
 import dev.knalis.vleapi.mapper.impl.CourseMapper;
 import dev.knalis.vleapi.mapper.intrf.ObjectMapper;
 import dev.knalis.vleapi.model.dto.course.CourseDto;
-import dev.knalis.vleapi.model.dto.course.CreateCourseRequest;
-import dev.knalis.vleapi.model.dto.course.UpdateCourseRequest;
+import dev.knalis.vleapi.model.dto.course.CourseCreateRequest;
+import dev.knalis.vleapi.model.dto.course.CourseUpdateRequest;
 import dev.knalis.vleapi.model.entity.Course;
 import dev.knalis.vleapi.model.entity.Group;
 import dev.knalis.vleapi.service.intrf.CRUDService;
@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping(CourseController.COURSE_REST_URL)
 @RequiredArgsConstructor
-public class CourseController extends AbstractCRUDController<Course, CourseDto, CreateCourseRequest, UpdateCourseRequest, Long> {
+public class CourseController extends AbstractCRUDController<Course, CourseDto, CourseCreateRequest, CourseUpdateRequest, Long> {
 
     public static final String COURSE_REST_URL = "/api/v1/courses";
 
@@ -33,7 +33,7 @@ public class CourseController extends AbstractCRUDController<Course, CourseDto, 
     }
 
     @Override
-    protected ObjectMapper<Course, CourseDto, CreateCourseRequest, UpdateCourseRequest> getMapper() {
+    protected ObjectMapper<Course, CourseDto, CourseCreateRequest, CourseUpdateRequest> getMapper() {
         return courseMapper;
     }
 

@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class UpdateGroupRequest {
+public class GroupUpdateRequest {
 
     @NotBlank
     private String name;

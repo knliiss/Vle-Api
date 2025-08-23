@@ -6,8 +6,8 @@ import dev.knalis.vleapi.mapper.impl.CourseMapper;
 import dev.knalis.vleapi.mapper.impl.UserMapper;
 import dev.knalis.vleapi.mapper.intrf.ObjectMapper;
 import dev.knalis.vleapi.model.dto.course.CourseDto;
-import dev.knalis.vleapi.model.dto.user.CreateUserRequest;
-import dev.knalis.vleapi.model.dto.user.UpdateUserRequest;
+import dev.knalis.vleapi.model.dto.user.UserCreateRequest;
+import dev.knalis.vleapi.model.dto.user.UserUpdateRequest;
 import dev.knalis.vleapi.model.dto.user.UserDto;
 import dev.knalis.vleapi.model.entity.Course;
 import dev.knalis.vleapi.model.entity.user.User;
@@ -24,7 +24,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(UserController.USER_REST_URL)
-public class UserController extends AbstractCRUDController<User, UserDto, CreateUserRequest, UpdateUserRequest, Long> {
+public class UserController extends AbstractCRUDController<User, UserDto, UserCreateRequest, UserUpdateRequest, Long> {
 
     public static final String USER_REST_URL = "/api/v1/users";
 
@@ -39,7 +39,7 @@ public class UserController extends AbstractCRUDController<User, UserDto, Create
     }
 
     @Override
-    protected ObjectMapper<User, UserDto, CreateUserRequest, UpdateUserRequest> getMapper() {
+    protected ObjectMapper<User, UserDto, UserCreateRequest, UserUpdateRequest> getMapper() {
         return userMapper;
     }
 

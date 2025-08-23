@@ -2,9 +2,9 @@ package dev.knalis.vleapi.controller.version.v1.impl;
 
 import dev.knalis.vleapi.controller.AbstractCRUDController;
 import dev.knalis.vleapi.mapper.intrf.ObjectMapper;
-import dev.knalis.vleapi.model.dto.topic.CreateTopicRequest;
+import dev.knalis.vleapi.model.dto.topic.TopicCreateRequest;
 import dev.knalis.vleapi.model.dto.topic.TopicDto;
-import dev.knalis.vleapi.model.dto.topic.UpdateTopicRequest;
+import dev.knalis.vleapi.model.dto.topic.TopicUpdateRequest;
 import dev.knalis.vleapi.model.entity.Course;
 import dev.knalis.vleapi.model.entity.Topic;
 import dev.knalis.vleapi.service.amazon.FileUploadService;
@@ -19,14 +19,14 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequestMapping(TopicController.TOPIC_REST_URL)
 @RequiredArgsConstructor
-public class TopicController extends AbstractCRUDController<Topic, TopicDto, CreateTopicRequest, UpdateTopicRequest, Long> {
+public class TopicController extends AbstractCRUDController<Topic, TopicDto, TopicCreateRequest, TopicUpdateRequest, Long> {
 
     public static final String TOPIC_REST_URL = "/api/v1/topics";
 
     private final CRUDService<Topic, Long> topicService;
     private final CRUDService<Course, Long> courseService;
 
-    private final ObjectMapper<Topic, TopicDto, CreateTopicRequest, UpdateTopicRequest> topicMapper;
+    private final ObjectMapper<Topic, TopicDto, TopicCreateRequest, TopicUpdateRequest> topicMapper;
     private final ObjectBinder objectBinder;
 
     private final FileUploadService uploadService;
@@ -42,7 +42,7 @@ public class TopicController extends AbstractCRUDController<Topic, TopicDto, Cre
 
     @Override
     @PostMapping
-    public ResponseEntity<TopicDto> create(@RequestBody CreateTopicRequest request) {
+    public ResponseEntity<TopicDto> create(@RequestBody TopicCreateRequest request) {
         Topic topic = getMapper().fromCreateRequest(request);
         topic = getService().create(topic);
         Course course = courseService.findById(request.getCourseId());
@@ -57,7 +57,7 @@ public class TopicController extends AbstractCRUDController<Topic, TopicDto, Cre
     }
 
     @Override
-    protected ObjectMapper<Topic, TopicDto, CreateTopicRequest, UpdateTopicRequest> getMapper() {
+    protected ObjectMapper<Topic, TopicDto, TopicCreateRequest, TopicUpdateRequest> getMapper() {
         return topicMapper;
     }
 

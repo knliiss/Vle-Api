@@ -4,10 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
-import java.util.List;
-
 @Data
-public class CreateGroupRequest {
+public class GroupCreateRequest {
     @NotBlank
     private String name;
 

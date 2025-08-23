@@ -1,14 +1,14 @@
 package dev.knalis.vleapi.mapper.impl;
 
 import dev.knalis.vleapi.mapper.intrf.ObjectMapper;
-import dev.knalis.vleapi.model.dto.topic.CreateTopicRequest;
+import dev.knalis.vleapi.model.dto.topic.TopicCreateRequest;
 import dev.knalis.vleapi.model.dto.topic.TopicDto;
-import dev.knalis.vleapi.model.dto.topic.UpdateTopicRequest;
+import dev.knalis.vleapi.model.dto.topic.TopicUpdateRequest;
 import dev.knalis.vleapi.model.entity.Topic;
 import org.springframework.stereotype.Component;
 
 @Component
-public class TopicMapper implements ObjectMapper<Topic, TopicDto, CreateTopicRequest, UpdateTopicRequest> {
+public class TopicMapper implements ObjectMapper<Topic, TopicDto, TopicCreateRequest, TopicUpdateRequest> {
 
     @Override
     public TopicDto toDto(Topic topic) {
@@ -24,7 +24,7 @@ public class TopicMapper implements ObjectMapper<Topic, TopicDto, CreateTopicReq
     }
 
     @Override
-    public Topic fromCreateRequest(CreateTopicRequest dto) {
+    public Topic fromCreateRequest(TopicCreateRequest dto) {
         Topic topic = new Topic();
         topic.setTitle(dto.getTitle());
         topic.setContent(dto.getContent());
@@ -32,12 +32,12 @@ public class TopicMapper implements ObjectMapper<Topic, TopicDto, CreateTopicReq
     }
 
     @Override
-    public void updateEntity(Topic topic, UpdateTopicRequest updateTopicRequest) {
-        if (updateTopicRequest.getTitle() != null) {
-            topic.setTitle(updateTopicRequest.getTitle());
+    public void updateEntity(Topic topic, TopicUpdateRequest topicUpdateRequest) {
+        if (topicUpdateRequest.getTitle() != null) {
+            topic.setTitle(topicUpdateRequest.getTitle());
         }
-        if (updateTopicRequest.getContent() != null) {
-            topic.setContent(updateTopicRequest.getContent());
+        if (topicUpdateRequest.getContent() != null) {
+            topic.setContent(topicUpdateRequest.getContent());
         }
     }
 }

@@ -3,7 +3,7 @@ package dev.knalis.vleapi.controller.version.v1.auth;
 import dev.knalis.vleapi.mapper.impl.UserMapper;
 import dev.knalis.vleapi.model.dto.auth.AuthRequest;
 import dev.knalis.vleapi.model.dto.auth.AuthResponse;
-import dev.knalis.vleapi.model.dto.user.CreateUserRequest;
+import dev.knalis.vleapi.model.dto.user.UserCreateRequest;
 import dev.knalis.vleapi.model.entity.user.User;
 import dev.knalis.vleapi.service.JwtService;
 import dev.knalis.vleapi.service.intrf.UserService;
@@ -51,13 +51,13 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody CreateUserRequest createUserRequest) {
+    public ResponseEntity<AuthResponse> register(@RequestBody UserCreateRequest userCreateRequest) {
 
-        if (userService.existsByUsername(createUserRequest.getUsername())) {
+        if (userService.existsByUsername(userCreateRequest.getUsername())) {
             return ResponseEntity.badRequest().body(new AuthResponse("Username already exists"));
         }
 
-        User createdUser = userService.create(userMapper.fromCreateRequest(createUserRequest));
+        User createdUser = userService.create(userMapper.fromCreateRequest(userCreateRequest));
 
         final String jwtToken = jwtService.generateToken(createdUser.getUsername());
         return ResponseEntity.ok(new AuthResponse(jwtToken));

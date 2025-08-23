@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class CreateTopicRequest {
+public class TopicCreateRequest {
     @NotBlank
     private String title;
 
