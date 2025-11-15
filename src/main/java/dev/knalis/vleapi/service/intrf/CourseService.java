@@ -19,4 +19,6 @@ public interface CourseService extends CRUDService<Course, Long> {
      * @return true if a course with the specified name exists, false otherwise
      */
     boolean existsByName(String name);
+
+    Double getGradeForCourse(Long courseId, Long userId);
 }

@@ -2,39 +2,36 @@ package dev.knalis.vleapi.model.entity;
 
 import dev.knalis.vleapi.model.entity.task.Task;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Getter
-@Setter
-@NoArgsConstructor
+@Data
 @Entity
 public class Topic {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private String title;
-
-    private String content;
+    private String name;
+    private String description;
 
     @ManyToOne
     @JoinColumn(name = "course_id")
     private Course course;
 
-    @ElementCollection
-    @CollectionTable(name = "topic_files", joinColumns = @JoinColumn(name = "topic_id"))
-    @Column(name = "file_url")
-    private List<String> fileUrls = new ArrayList<>();
-
-
-    @OneToMany(mappedBy = "Topic", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "topic", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Task> tasks = new ArrayList<>();
 
-    public double getTopicMark() {
-        return tasks.stream().mapToDouble(Task::getMark).sum();
+    public void addTask(Task task) {
+        task.setTopic(this);
+        this.tasks.add(task);
     }
+
+    public void removeTask(Task task) {
+        this.tasks.remove(task);
+        task.setTopic(null);
+    }
+
 }

@@ -1,144 +1,64 @@
-# Virtual Learning Environment (VLE) API
+# VleApi
 
-📌 Опис
+This repository contains the VLE backend service. It uses PostgreSQL for relational data and MongoDB for submission documents. OpenAPI (swagger) is enabled.
 
-### VLE API — це RESTful API для віртуального навчального середовища, побудоване з використанням Spring Boot і Gradle.
-#### API дозволяє керувати користувачами, групами, курсами та забезпечує аутентифікацію через JWT.
+Quick start (local with Docker Compose)
 
-⸻
-
- Запуск проєкту
-
-1. ### Клонування репозиторію
-
-```` 
-git clone <repository-url>
-cd <repository-directory>
-````
-
-⸻
-
-2. ### Налаштування бази даних
-
-Переконайся, що PostgreSQL запущено локально або через Docker.
-
-Налаштуй підключення у src/main/resources/application-postgres.yml:
-
-```yaml
-spring:
-  datasource:
-    url: your-database-url
-    username: your-username
-    password: your-password
-    driver-class-name: org.postgresql.Driver
-
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-```
-
-⸻
-
-3. ### Додай секрет JWT (НЕ коміть у git)
-
-Створи файл ``` src/main/resources/application-secrets.yml```:
-
-```yaml
-jwt:
-  secret: your-super-secret-key
-  
-cloud:
-  aws:
-    credentials:
-      access-key: YOUR_ACCESS_KEY
-      secret-key: YOUR_SECRET_KEY
-    region:
-      static: YOUR_BUCKET_REGION
-    stack:
-      auto: false
-  s3:
-    bucket: YOUR_BUCKET_NAME
-```
-
-І додай до .gitignore:
-
-/src/main/resources/application-secrets.yml
-
-
-⸻
-
-4. ### Запуск програми
-
-Через IntelliJ / IDE:
-
-Запусти клас VleApiApplication.java.
-
-Через термінал:
+1. Build the JAR and Docker image:
 
 ```bash
-./gradlew bootRun
+./gradlew build
+docker compose -f compose.yaml build
 ```
 
-⸻
+2. Start the full stack (Postgres, Mongo, PgAdmin, app):
 
-🔐 Аутентифікація (JWT)
-
-Логін
-
-POST /api/v1/auth/login
-
-```json
-{
-    "username": "admin",
-    "password": "admin123"
-}
+```bash
+docker compose -f compose.yaml up
 ```
 
-Response:
+3. Open the app and docs:
 
-```json
-{
-  "token": "eyJhbGciOiJIUzI1NiJ9..."
-}
-```
+- App: http://localhost:8080
+- Swagger UI: http://localhost:8080/swagger-ui.html
+- OpenAPI JSON: http://localhost:8080/v3/api-docs
+- PgAdmin: http://localhost:5050 (use credentials from compose.yaml)
 
-Додавай токен у кожен запит:
+Configuration
 
-```
-Authorization: Bearer <token>
-```
+The project uses a single `src/main/resources/application.yml` with profile support. Environment variables used in `compose.yaml` map to properties accepted by Spring Boot. Notable envs:
 
-⸻
+- SPRING_DATASOURCE_URL / SPRING_DATASOURCE_USERNAME / SPRING_DATASOURCE_PASSWORD
+- SPRING_DATA_MONGODB_URI
+- JWT_SECRET
+- CLOUD_S3_BUCKET
+- CLOUD_AWS_CREDENTIALS_ACCESS_KEY
+- CLOUD_AWS_CREDENTIALS_SECRET_KEY
 
-### Приклад запиту на оновлення користувача
+Security
 
-PUT /api/v1/users/1
-Host: localhost:8080
-Authorization: Bearer eyJhbGciOiJIUzI1NiJ9...
-Content-Type: application/json
+- JWT authentication is used. The `JwtFilter` reads the token from `Authorization: Bearer <token>` header.
+- Roles: ADMINISTRATOR, TEACHER, STUDENT. Grading endpoints are restricted to TEACHER and ADMINISTRATOR.
 
-```json
-{
-  "username": "newUsername",
-  "password": "newPassword",
-  "avatarUrl": "https://example.com/avatar.png",
-  "role": "STUDENT"
-}
-```
+Development notes
 
-## status: 200 OK
-```json
-{
-  "id": 1,
-  "username": "newUsername",
-  "role": "STUDENT",
-  "groupId": 44312,
-  "courseIds": []
-}
-```
+- Run unit tests: `./gradlew test`
+- To run the app without Docker for development, ensure Postgres and MongoDB are running locally and set the environment variables accordingly.
 
+What I implemented
+
+- Unified `application.yml` and Docker Compose with `Dockerfile`.
+- OpenAPI (springdoc) configuration + Swagger UI.
+- DTOs and mappers for main entities; controllers that expose a DTO-based REST API.
+- Partial Mongo integration for submissions and cleanup behavior on deletes.
+- Basic validation on DTOs and a sample integration test for user create validation.
+
+Next improvements (recommended)
+
+- Add more integration tests covering security and all controllers.
+- Replace manual mappers with MapStruct.
+- Add pagination and filtering for list endpoints.
+- Harden Docker Compose for production (secrets, volumes, healthchecks).
+
+If you want, I can proceed to add full OpenAPI examples, more integration tests, and replace mappers with MapStruct next — tell me "continue" and I'll proceed to the next phase.
 

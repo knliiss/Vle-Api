@@ -4,7 +4,6 @@ import dev.knalis.vleapi.model.entity.Group;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.List;
 
 @Entity(name = "users")
 @Data
@@ -25,7 +24,6 @@ public class User {
     @ManyToOne
     @JoinColumn(name = "group_id")
     private Group group;
-
-    @ElementCollection
-    private List<Long> courseIds;
+    
+    
 }

@@ -1,7 +1,58 @@
 spring:
-  application:
-    name: VleApi
   profiles:
     active: postgres
+
+---
+# Postgres profile (default)
+spring:
   config:
-    import: optional:classpath:application-secrets.yml
+    activate:
+      on-profile: postgres
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/vle}
+    username: ${SPRING_DATASOURCE_USERNAME:vle-admin}
+    password: ${SPRING_DATASOURCE_PASSWORD:vle-admin-password}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+  data:
+    mongodb:
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/vle}
+
+jwt:
+  secret: ${JWT_SECRET:changeit}
+
+cloud:
+  s3:
+    bucket: ${CLOUD_S3_BUCKET:your-bucket}
+  aws:
+    credentials:
+      access-key: ${CLOUD_AWS_CREDENTIALS_ACCESS_KEY:}
+      secret-key: ${CLOUD_AWS_CREDENTIALS_SECRET_KEY:}
+    region:
+      static: ${AWS_REGION:us-east-1}
+
+---
+# local-dev profile usiyng H2 (for tests or quick local run)
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/vle
+
+jwt:
+  secret: test-secret

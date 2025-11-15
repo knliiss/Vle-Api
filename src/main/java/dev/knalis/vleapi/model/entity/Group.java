@@ -2,7 +2,7 @@ package dev.knalis.vleapi.model.entity;
 
 import dev.knalis.vleapi.model.entity.user.User;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,10 +16,10 @@ public class Group {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
     private String name;
 
-    private short year;
+    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<User> users = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(
@@ -27,23 +27,30 @@ public class Group {
             joinColumns = @JoinColumn(name = "group_id"),
             inverseJoinColumns = @JoinColumn(name = "course_id")
     )
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
     private List<Course> courses = new ArrayList<>();
 
-    @OneToMany(mappedBy = "group")
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private List<User> users = new ArrayList<>();
-
     public void addUser(User user) {
-        users.add(user);
         user.setGroup(this);
+        this.users.add(user);
+    }
+
+    public void removeUser(User user) {
+        this.users.remove(user);
+        user.setGroup(null);
     }
 
     public void addCourse(Course course) {
-        courses.add(course);
-        course.getGroups().add(this);
+        if (!this.courses.contains(course)) {
+            this.courses.add(course);
+        }
+        if (!course.getGroups().contains(this)) {
+            course.getGroups().add(this);
+        }
+    }
+
+    public void removeCourse(Course course) {
+        this.courses.remove(course);
+        course.getGroups().remove(this);
     }
 
 }

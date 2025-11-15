@@ -4,6 +4,8 @@ import dev.knalis.vleapi.exception.custom.UserNotHaveGroupException;
 import dev.knalis.vleapi.model.entity.Course;
 import dev.knalis.vleapi.model.entity.user.User;
 import dev.knalis.vleapi.repo.UserRepo;
+import dev.knalis.vleapi.repo.mongo.FileSubmissionDocRepo;
+import dev.knalis.vleapi.repo.mongo.TestSubmissionDocRepo;
 import dev.knalis.vleapi.service.intrf.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
@@ -20,6 +22,12 @@ public class UserServiceImpl extends AbstractCRUDService<User, Long> implements 
 
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
+
+    @Autowired
+    private FileSubmissionDocRepo fileSubmissionDocRepo;
+
+    @Autowired
+    private TestSubmissionDocRepo testSubmissionDocRepo;
 
     @Override
     public User update(User object) {
@@ -69,5 +77,12 @@ public class UserServiceImpl extends AbstractCRUDService<User, Long> implements 
             throw new UserNotHaveGroupException("User " + userId + " does not belong to any group");
         }
         return user.getGroup().getCourses();
+    }
+
+    @Override
+    public void delete(Long id) {
+        fileSubmissionDocRepo.deleteAll(fileSubmissionDocRepo.findByUserId(id));
+        testSubmissionDocRepo.deleteAll(testSubmissionDocRepo.findByUserId(id));
+        getRepository().deleteById(id);
     }
 }

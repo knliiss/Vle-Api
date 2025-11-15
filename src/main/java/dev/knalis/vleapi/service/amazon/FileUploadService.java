@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 
@@ -19,7 +20,7 @@ public class FileUploadService {
 
     private final AmazonS3 s3Client;
 
-    @Value("${cloud.aws.s3.bucket}")
+    @Value("${cloud.s3.bucket}")
     private String bucket;
 
     public String uploadFile(MultipartFile file) {

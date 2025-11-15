@@ -1,54 +1,32 @@
 package dev.knalis.vleapi.mapper.impl;
 
 import dev.knalis.vleapi.mapper.intrf.ObjectMapper;
-import dev.knalis.vleapi.model.dto.user.UserCreateRequest;
-import dev.knalis.vleapi.model.dto.user.UserUpdateRequest;
-import dev.knalis.vleapi.model.dto.user.UserDto;
 import dev.knalis.vleapi.model.entity.user.User;
+import dev.knalis.vleapi.model.dto.user.UserCreateRequest;
 import org.springframework.stereotype.Component;
 
 @Component
-public class UserMapper implements ObjectMapper<User, UserDto, UserCreateRequest, UserUpdateRequest> {
+public class UserMapper implements ObjectMapper<User, Object, UserCreateRequest, Object> {
 
     @Override
-    public UserDto toDto(User user) {
-        UserDto dto = new UserDto();
-        dto.setId(user.getId());
-        dto.setUsername(user.getUsername());
-        dto.setAvatarUrl(user.getAvatarUrl());
-        dto.setRole(user.getRole());
-        if (user.getGroup() != null) {
-            dto.setGroupId(user.getGroup().getId());
-        }
-        dto.setCourseIds(user.getCourseIds());
-
-        return dto;
+    public Object toDto(User entity) {
+        return null;
     }
 
     @Override
     public User fromCreateRequest(UserCreateRequest dto) {
-        User user = new User();
-        user.setUsername(dto.getUsername());
-        user.setPassword(dto.getPassword());
-        user.setRole(dto.getRole());
-        return user;
+        User u = new User();
+        u.setUsername(dto.getUsername());
+        u.setPassword(dto.getPassword());
+        if (dto.getRole() != null) {
+            u.setRole(dev.knalis.vleapi.model.entity.user.Role.fromString(dto.getRole()));
+        } else {
+            u.setRole(dev.knalis.vleapi.model.entity.user.Role.STUDENT);
+        }
+        return u;
     }
 
     @Override
-    public void updateEntity(User user, UserUpdateRequest dto) {
-        if (dto.getUsername() != null) {
-            user.setUsername(dto.getUsername());
-        }
-        if (dto.getPassword() != null) {
-            user.setPassword(dto.getPassword());
-        }
-        if (dto.getRole() != null) {
-            user.setRole(dto.getRole());
-        }
-
-        if (dto.getAvatarUrl() != null) {
-            user.setAvatarUrl(dto.getAvatarUrl());
-        }
-
+    public void updateEntity(User entity, Object updateRequest) {
     }
 }

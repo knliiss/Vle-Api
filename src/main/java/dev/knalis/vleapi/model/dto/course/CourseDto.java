@@ -1,15 +1,13 @@
 package dev.knalis.vleapi.model.dto.course;
 
-import lombok.Data;
-import java.util.List;
+import jakarta.validation.constraints.NotBlank;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@Data
 public class CourseDto {
     private Long id;
-
+    @NotBlank
+    @Schema(example = "Algorithms 101")
     private String name;
-
-    private List<Long> topicIds;
-
-    private List<Long> groupIds;
+    public Long getId(){return id;} public void setId(Long id){this.id=id;}
+    public String getName(){return name;} public void setName(String name){this.name=name;}
 }

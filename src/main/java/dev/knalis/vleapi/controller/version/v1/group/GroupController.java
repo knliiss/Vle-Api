@@ -1,0 +1,48 @@
+package dev.knalis.vleapi.controller.version.v1.group;
+
+import dev.knalis.vleapi.controller.AbstractCRUDController;
+import dev.knalis.vleapi.mapper.intrf.ObjectMapper;
+import dev.knalis.vleapi.model.dto.group.GroupDto;
+import dev.knalis.vleapi.model.entity.Group;
+import dev.knalis.vleapi.service.intrf.CRUDService;
+import dev.knalis.vleapi.service.intrf.GroupService;
+import dev.knalis.vleapi.mapper.impl.GroupEntityMapper;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
+import jakarta.validation.Valid;
+
+@Tag(name = "Groups", description = "Group management")
+@RestController
+@RequestMapping("/api/v1/groups")
+public class GroupController extends AbstractCRUDController<Group, GroupDto, GroupDto, GroupDto, Long> {
+
+    @Autowired
+    private GroupService groupService;
+
+    @Autowired
+    private GroupEntityMapper groupMapper;
+
+    @Override
+    protected CRUDService<Group, Long> getService() { return groupService; }
+
+    @Override
+    protected ObjectMapper<Group, GroupDto, GroupDto, GroupDto> getMapper() { return groupMapper; }
+
+    @Override
+    protected String getRestUrl() { return "groups"; }
+
+    @Operation(summary = "Create a group", security = @SecurityRequirement(name = "bearerAuth"))
+    @PostMapping
+    @Override
+    public ResponseEntity<GroupDto> create(@Valid @RequestBody GroupDto request) {
+        return super.create(request);
+    }
+
+}
