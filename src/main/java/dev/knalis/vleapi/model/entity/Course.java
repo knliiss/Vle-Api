@@ -1,6 +1,6 @@
 package dev.knalis.vleapi.model.entity;
 
-import dev.knalis.vleapi.model.entity.task.Task;
+import dev.knalis.vleapi.model.entity.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,6 +22,14 @@ public class Course {
     @ManyToMany(mappedBy = "courses")
     private List<Group> groups = new ArrayList<>();
 
+    @ManyToMany
+    @JoinTable(
+            name = "course_teachers",
+            joinColumns = @JoinColumn(name = "course_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<User> teachers = new ArrayList<>();
+
     public void addTopic(Topic topic) {
         topic.setCourse(this);
         this.topics.add(topic);
@@ -32,5 +40,12 @@ public class Course {
         topic.setCourse(null);
     }
     
+    public void addTeacher(User teacher) {
+        this.teachers.add(teacher);
+    }
+
+    public void removeTeacher(User teacher) {
+        this.teachers.remove(teacher);
+    }
 
 }

@@ -4,6 +4,9 @@ import dev.knalis.vleapi.model.entity.Course;
 import dev.knalis.vleapi.model.entity.Group;
 import dev.knalis.vleapi.model.entity.Topic;
 import dev.knalis.vleapi.model.entity.user.User;
+import dev.knalis.vleapi.model.entity.user.Role;
+import dev.knalis.vleapi.repo.StudentProfileRepo;
+import dev.knalis.vleapi.model.entity.user.StudentProfile;
 import dev.knalis.vleapi.service.intrf.CourseService;
 import dev.knalis.vleapi.service.intrf.GroupService;
 import dev.knalis.vleapi.service.intrf.TopicService;
@@ -20,20 +23,25 @@ public class ObjectBinder {
     private final GroupService groupService;
     private final CourseService courseService;
     private final TopicService topicService;
+    private final StudentProfileRepo studentProfileRepo;
 
     @Transactional
     public void bindUserToGroup(Long userId, Long groupId) {
         User user = userService.findById(userId);
         Group group = groupService.findById(groupId);
-
-        if (user.getGroup() != null) {
-            throw new IllegalArgumentException("User is already part of a group");
+        if (user.getRole() != Role.STUDENT) {
+            throw new IllegalArgumentException("Only STUDENT users can be bound to a group");
         }
-
-        group.addUser(user);
-
-        userService.update(user);
-        groupService.update(group);
+        if (studentProfileRepo.findByUserId(user.getId()).filter(sp -> sp.getGroup()!=null).isPresent()) {
+            throw new IllegalArgumentException("Student already belongs to a group");
+        }
+        StudentProfile sp = studentProfileRepo.findByUserId(user.getId()).orElseGet(() -> {
+            StudentProfile created = new StudentProfile();
+            created.setUser(user);
+            return studentProfileRepo.save(created);
+        });
+        sp.setGroup(group);
+        studentProfileRepo.save(sp);
     }
 
     @Transactional
@@ -61,16 +69,15 @@ public class ObjectBinder {
     @Transactional
     public void unbindUserFromGroup(Long userId, Long groupId) {
         User user = userService.findById(userId);
-        Group group = groupService.findById(groupId);
-
-        if (!group.getUsers().contains(user)) {
-            throw new IllegalArgumentException("User is not part of the group");
+        if (user.getRole() != Role.STUDENT) {
+            throw new IllegalArgumentException("Only STUDENT users can be unbound from a group");
         }
-        group.getUsers().remove(user);
-        user.setGroup(null);
-
-        userService.update(user);
-        groupService.update(group);
+        StudentProfile sp = studentProfileRepo.findByUserId(user.getId()).orElseThrow(() -> new IllegalArgumentException("Student profile not found"));
+        if (sp.getGroup()==null || !sp.getGroup().getId().equals(groupId)) {
+            throw new IllegalArgumentException("Student not in specified group");
+        }
+        sp.setGroup(null);
+        studentProfileRepo.save(sp);
     }
 
     @Transactional
@@ -96,6 +103,31 @@ public class ObjectBinder {
         }
         course.getTopics().remove(topic);
         topicService.update(topic);
+        courseService.update(course);
+    }
+
+    @Transactional
+    public void bindTeacherToCourse(Long teacherId, Long courseId) {
+        User teacher = userService.findById(teacherId);
+        if (teacher.getRole() != Role.TEACHER && teacher.getRole() != Role.ADMINISTRATOR) {
+            throw new IllegalArgumentException("User must be TEACHER or ADMINISTRATOR to be assigned as course teacher");
+        }
+        Course course = courseService.findById(courseId);
+        if (course.getTeachers().contains(teacher)) {
+            throw new IllegalArgumentException("Teacher already assigned to course");
+        }
+        course.addTeacher(teacher);
+        courseService.update(course);
+    }
+
+    @Transactional
+    public void unbindTeacherFromCourse(Long teacherId, Long courseId) {
+        User teacher = userService.findById(teacherId);
+        Course course = courseService.findById(courseId);
+        if (!course.getTeachers().contains(teacher)) {
+            throw new IllegalArgumentException("Teacher is not assigned to course");
+        }
+        course.removeTeacher(teacher);
         courseService.update(course);
     }
 

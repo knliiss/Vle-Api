@@ -5,6 +5,7 @@ public enum SubmissionStatus {
     ADDED,
     GRADED,
     RETURNED,
-    REMOVED
+    REMOVED,
+    OVERDUE
 
 }

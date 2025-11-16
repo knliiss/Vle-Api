@@ -5,7 +5,6 @@ import dev.knalis.vleapi.model.dto.user.UserCreateRequest;
 import dev.knalis.vleapi.model.dto.user.UserUpdateRequest;
 import dev.knalis.vleapi.model.dto.user.UserDto;
 import dev.knalis.vleapi.model.entity.user.User;
-import dev.knalis.vleapi.model.entity.Group;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -19,22 +18,20 @@ public class UserEntityMapper implements ObjectMapper<User, UserDto, UserCreateR
         dto.setUsername(entity.getUsername());
         dto.setAvatarUrl(entity.getAvatarUrl());
         dto.setRole(entity.getRole() == null ? null : entity.getRole().name());
-        dto.setGroupId(entity.getGroup() == null ? null : entity.getGroup().getId());
+        dto.setFio(entity.getFio());
         return dto;
     }
 
     @Override
     public User fromCreateRequest(UserCreateRequest dto) {
         User u = new User();
-        u.setUsername(dto.getUsername());
+        if (dto.getUsername() != null) u.setUsername(dto.getUsername().trim().toLowerCase());
         u.setPassword(dto.getPassword());
+        u.setFio(dto.getFio());
         if (dto.getRole() != null) {
             u.setRole(dev.knalis.vleapi.model.entity.user.Role.fromString(dto.getRole()));
         } else {
             u.setRole(dev.knalis.vleapi.model.entity.user.Role.STUDENT);
-        }
-        if (dto.getGroupId() != null) {
-            Group g = new Group(); g.setId(dto.getGroupId()); u.setGroup(g);
         }
         return u;
     }
@@ -43,7 +40,7 @@ public class UserEntityMapper implements ObjectMapper<User, UserDto, UserCreateR
     public void updateEntity(User entity, UserUpdateRequest updateRequest) {
         if (updateRequest.getAvatarUrl() != null) entity.setAvatarUrl(updateRequest.getAvatarUrl());
         if (updateRequest.getPassword() != null) entity.setPassword(updateRequest.getPassword());
-        if (updateRequest.getGroupId() != null) { Group g = new Group(); g.setId(updateRequest.getGroupId()); entity.setGroup(g); }
+        if (updateRequest.getFio() != null) entity.setFio(updateRequest.getFio());
+        // group update removed; handled via StudentProfile service
     }
 }
-

@@ -17,12 +17,14 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepo.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
-        return new UserDetailsImpl(user);
+        return userRepo.findFirstByUsernameIgnoreCase(username)
+                .map(UserDetailsImpl::new)
+                .orElseGet(() -> userRepo.findByUsernameIgnoreCase(username).stream().findFirst()
+                        .map(UserDetailsImpl::new)
+                        .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username)));
     }
 
     public boolean userExists(String username) {
-        return userRepo.existsByUsername(username);
+        return userRepo.existsByUsernameIgnoreCase(username);
     }
 }

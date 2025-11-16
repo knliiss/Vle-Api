@@ -22,5 +22,10 @@ public interface UserService extends CRUDService<User, Long> {
      */
     boolean existsByUsername(String username);
 
+    /**
+     * @return true if there is at least one user in the system
+     */
+    boolean hasAnyUser();
+
     List<Course> findAvailableCoursesForUser(Long userId);
 }

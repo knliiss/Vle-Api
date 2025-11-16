@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: vle-admin-password
       POSTGRES_DB: vle
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 
@@ -50,12 +50,13 @@ services:
       SPRING_DATASOURCE_USERNAME: vle-admin
       SPRING_DATASOURCE_PASSWORD: vle-admin-password
       SPRING_DATA_MONGODB_URI: mongodb://vle-mongo-admin:vle-mongo-password@mongodb:27017/vle
-      JWT_SECRET: super-secret-key-vle-ultra-123456789012345678901234
+      JWT_SECRET: super-secret-key-vle-ultra-123456789012345678s901234
       CLOUD_S3_BUCKET: vle-service-upload
       CLOUD_AWS_CREDENTIALS_ACCESS_KEY: AKIA2YWWLLT5KV43NK2N
       CLOUD_AWS_CREDENTIALS_SECRET_KEY: dummy
+      ADMIN_BOOTSTRAP_SECRET: bootstrap-super-duper-secret-knalis-key
     ports:
-      - "8080:8080"
+      - "8060:8080"
     depends_on:
       - postgres
       - mongodb

@@ -11,13 +11,13 @@ public class UserUpdateRequest {
     @Schema(description = "New password (optional) - plain text; will be hashed")
     private String password;
 
-    @Schema(example = "1", description = "Optional group id to assign the user to")
-    private Long groupId;
+    @Schema(example = "Іван Іванович", description = "Full name (ФИО)")
+    private String fio;
 
     public String getAvatarUrl() { return avatarUrl; }
     public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
-    public Long getGroupId() { return groupId; }
-    public void setGroupId(Long groupId) { this.groupId = groupId; }
+    public String getFio() { return fio; }
+    public void setFio(String fio) { this.fio = fio; }
 }

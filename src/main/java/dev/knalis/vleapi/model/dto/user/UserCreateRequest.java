@@ -9,7 +9,7 @@ import lombok.Data;
 public class UserCreateRequest {
     @NotBlank
     @Size(min = 3, max = 50)
-    @Schema(example = "johndoe", description = "Unique username")
+    @Schema(example = "johndoe", description = "Unique username (case-insensitive, stored lowercase)")
     private String username;
 
     @NotBlank
@@ -17,10 +17,9 @@ public class UserCreateRequest {
     @Schema(example = "P@ssw0rd", description = "User password (plain text). Will be hashed before storing")
     private String password;
 
-    @Schema(example = "STUDENT", description = "Role of the user (ADMINISTRATOR, TEACHER, STUDENT)")
+    @Schema(example = "STUDENT", description = "Role of the user (ADMINISTRATOR, TEACHER, STUDENT). Appropriate profile will be auto-created.")
     private String role;
 
-    @Schema(example = "1", description = "Optional group id to assign the user to")
-    private Long groupId;
-    
+    @Schema(example = "Іван Іванович", description = "Full name (ФИО)")
+    private String fio;
 }

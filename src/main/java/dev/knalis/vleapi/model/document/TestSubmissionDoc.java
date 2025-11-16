@@ -1,5 +1,6 @@
 package dev.knalis.vleapi.model.document;
 
+import dev.knalis.vleapi.model.entity.task.SubmissionStatus;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -21,7 +22,10 @@ public class TestSubmissionDoc {
 
     private String contentUrl;
 
+    private String content;
+
+    private SubmissionStatus status;
+
     private Double grade;
     
 }
-

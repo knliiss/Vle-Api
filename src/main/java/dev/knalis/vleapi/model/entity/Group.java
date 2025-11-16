@@ -1,6 +1,5 @@
 package dev.knalis.vleapi.model.entity;
 
-import dev.knalis.vleapi.model.entity.user.User;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -18,9 +17,6 @@ public class Group {
 
     private String name;
 
-    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<User> users = new ArrayList<>();
-
     @ManyToMany
     @JoinTable(
             name = "group_course",
@@ -29,15 +25,6 @@ public class Group {
     )
     private List<Course> courses = new ArrayList<>();
 
-    public void addUser(User user) {
-        user.setGroup(this);
-        this.users.add(user);
-    }
-
-    public void removeUser(User user) {
-        this.users.remove(user);
-        user.setGroup(null);
-    }
 
     public void addCourse(Course course) {
         if (!this.courses.contains(course)) {

@@ -41,11 +41,10 @@ public abstract class AbstractCRUDController<Entity, EntityDto, CreateRequest, U
         Entity created = getService().create(getMapper().fromCreateRequest(request));
         EntityDto createdDto = getMapper().toDto(created);
         if (createdDto == null) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(null);
         }
         ID id = getService().getId(created);
         URI location = URI.create(String.format("/%s", id));
-
         return ResponseEntity.created(location).body(createdDto);
     }
 
@@ -59,14 +58,30 @@ public abstract class AbstractCRUDController<Entity, EntityDto, CreateRequest, U
     public ResponseEntity<EntityDto> update(@PathVariable ID id, @Valid @RequestBody UpdateRequest request) {
         Entity entity = getService().findById(id);
         if (entity == null) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(404).body(null);
         }
-
         getMapper().updateEntity(entity, request);
         Entity updatedEntity = getService().update(entity);
-
         EntityDto updatedDto = getMapper().toDto(updatedEntity);
-        return updatedDto != null ? ResponseEntity.ok(updatedDto) : ResponseEntity.notFound().build();
+        return updatedDto != null ? ResponseEntity.ok(updatedDto) : ResponseEntity.badRequest().body(null);
+    }
+
+
+    @PatchMapping("/{id}")
+    @Operation(summary = "Partially update resource", description = "Updates only provided fields (PATCH)")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Resource updated", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "404", description = "Resource not found")
+    })
+    public ResponseEntity<EntityDto> patch(@PathVariable ID id, @RequestBody UpdateRequest request) {
+        Entity entity = getService().findById(id);
+        if (entity == null) {
+            return ResponseEntity.status(404).body(null);
+        }
+        getMapper().updateEntity(entity, request);
+        Entity updatedEntity = getService().update(entity);
+        EntityDto updatedDto = getMapper().toDto(updatedEntity);
+        return updatedDto != null ? ResponseEntity.ok(updatedDto) : ResponseEntity.badRequest().body(null);
     }
 
 
@@ -79,7 +94,7 @@ public abstract class AbstractCRUDController<Entity, EntityDto, CreateRequest, U
     public ResponseEntity<EntityDto> findById(@PathVariable ID id) {
         Entity entity = getService().findById(id);
         if (entity == null) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(404).body(null);
         }
         EntityDto dto = getMapper().toDto(entity);
         return ResponseEntity.ok(dto);
@@ -106,7 +121,7 @@ public abstract class AbstractCRUDController<Entity, EntityDto, CreateRequest, U
             getService().delete(id);
             return ResponseEntity.noContent().build();
         } else {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(404).build();
         }
     }
 }

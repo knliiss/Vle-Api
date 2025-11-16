@@ -6,6 +6,7 @@ public class UserDto {
     private String avatarUrl;
     private String role;
     private Long groupId;
+    private String fio;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -17,5 +18,6 @@ public class UserDto {
     public void setRole(String role) { this.role = role; }
     public Long getGroupId() { return groupId; }
     public void setGroupId(Long groupId) { this.groupId = groupId; }
+    public String getFio() { return fio; }
+    public void setFio(String fio) { this.fio = fio; }
 }
-

@@ -25,6 +25,9 @@ spring:
 jwt:
   secret: ${JWT_SECRET:changeit}
 
+admin:
+  bootstrap-secret: ${ADMIN_BOOTSTRAP_SECRET:}
+
 cloud:
   s3:
     bucket: ${CLOUD_S3_BUCKET:your-bucket}
@@ -56,3 +59,6 @@ spring:
 
 jwt:
   secret: test-secret
+
+admin:
+  bootstrap-secret: test-bootstrap

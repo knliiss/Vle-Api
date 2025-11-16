@@ -1,6 +1,5 @@
 package dev.knalis.vleapi.model.entity.user;
 
-import dev.knalis.vleapi.model.entity.Group;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -13,17 +12,22 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true, nullable = false)
     private String username;
     private String password;
 
     private String avatarUrl;
 
+    // Full name (ФИО)
+    private String fio;
+
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @ManyToOne
-    @JoinColumn(name = "group_id")
-    private Group group;
-    
-    
+    @PrePersist
+    @PreUpdate
+    private void normalize() {
+        if (this.username != null) this.username = this.username.trim().toLowerCase();
+    }
+
 }
