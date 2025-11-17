@@ -13,6 +13,8 @@ spring:
     username: ${SPRING_DATASOURCE_USERNAME:vle-admin}
     password: ${SPRING_DATASOURCE_PASSWORD:vle-admin-password}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-init-sql: SET TIME ZONE 'UTC'
   jpa:
     hibernate:
       ddl-auto: update
@@ -20,10 +22,18 @@ spring:
 
   data:
     mongodb:
-      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/vle}
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/vle?authSource=admin}
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
 
 jwt:
-  secret: ${JWT_SECRET:changeit}
+  # Provide a secure default for local runs (32+ bytes). In production set JWT_SECRET env var.
+  secret: ${JWT_SECRET:super-secret-key-vle-ultra-123456789012345678s901234}
 
 admin:
   bootstrap-secret: ${ADMIN_BOOTSTRAP_SECRET:}
@@ -31,12 +41,19 @@ admin:
 cloud:
   s3:
     bucket: ${CLOUD_S3_BUCKET:your-bucket}
+    endpoint: ${CLOUD_S3_ENDPOINT:}
+    public-base-url: ${CLOUD_S3_PUBLIC_BASE_URL:}
   aws:
     credentials:
       access-key: ${CLOUD_AWS_CREDENTIALS_ACCESS_KEY:}
       secret-key: ${CLOUD_AWS_CREDENTIALS_SECRET_KEY:}
     region:
       static: ${AWS_REGION:us-east-1}
+
+app:
+  cache:
+    redis:
+      enabled: ${APP_CACHE_REDIS_ENABLED:true}
 
 ---
 # local-dev profile usiyng H2 (for tests or quick local run)
@@ -55,7 +72,7 @@ spring:
     show-sql: false
   data:
     mongodb:
-      uri: mongodb://localhost:27017/vle
+      uri: mongodb://localhost:27017/vle?authSource=admin
 
 jwt:
   secret: test-secret

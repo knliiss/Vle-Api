@@ -97,13 +97,31 @@ public class CourseController extends AbstractCRUDController<Course, CourseDto, 
     @PreAuthorize(CAN_VIEW_COURSE)
     @GetMapping("/{id}/topics")
     public ResponseEntity<?> listTopics(@PathVariable Long id) {
-        Course course = courseService.findById(id); // 404 via handler if missing
+        Course course = courseService.findById(id);
         List<Topic> topics = course.getTopics();
         if (topics == null || topics.isEmpty()) {
             return ResponseEntity.ok(List.of());
         }
         List<TopicDto> dtoList = topics.stream().map(topicMapper::toDto).toList();
         return ResponseEntity.ok(dtoList);
+    }
+
+    @Operation(summary = "Get all groups for a course", description = "Returns all groups linked to the course", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponse(responseCode = "200", description = "List of groups", content = @Content(mediaType = "application/json"))
+    @PreAuthorize(CAN_VIEW_COURSE)
+    @GetMapping("/{id}/groups")
+    public ResponseEntity<?> listGroups(@PathVariable Long id) {
+        Course course = courseService.findById(id);
+        return ResponseEntity.ok(course.getGroups());
+    }
+
+    @Operation(summary = "Get all teachers for a course", description = "Returns all teachers linked to the course", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponse(responseCode = "200", description = "List of teachers", content = @Content(mediaType = "application/json"))
+    @PreAuthorize(CAN_VIEW_COURSE)
+    @GetMapping("/{id}/teachers")
+    public ResponseEntity<?> listTeachers(@PathVariable Long id) {
+        Course course = courseService.findById(id);
+        return ResponseEntity.ok(course.getTeachers());
     }
 
 }

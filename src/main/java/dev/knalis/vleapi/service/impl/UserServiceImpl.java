@@ -14,16 +14,26 @@ import dev.knalis.vleapi.model.entity.user.AdminProfile;
 import dev.knalis.vleapi.repo.StudentProfileRepo;
 import dev.knalis.vleapi.repo.TeacherProfileRepo;
 import dev.knalis.vleapi.repo.AdminProfileRepo;
+import dev.knalis.vleapi.repo.CourseRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.StreamSupport;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class UserServiceImpl extends AbstractCRUDService<User, Long> implements UserService {
+
+    private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
 
     @Autowired
     private UserRepo userRepo;
@@ -46,6 +56,9 @@ public class UserServiceImpl extends AbstractCRUDService<User, Long> implements 
     @Autowired
     private AdminProfileRepo adminProfileRepo;
 
+    @Autowired
+    private CourseRepo courseRepo;
+
     @Override
     public User update(User object) {
         if (object.getUsername() != null) {
@@ -67,6 +80,11 @@ public class UserServiceImpl extends AbstractCRUDService<User, Long> implements 
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "userByUsername", allEntries = true),
+            @CacheEvict(cacheNames = "availableCourses", allEntries = true),
+            @CacheEvict(cacheNames = "coursesByTeacher", allEntries = true)
+    })
     public User create(User object) {
         if (object.getUsername() != null) {
             object.setUsername(object.getUsername().trim().toLowerCase());
@@ -87,7 +105,7 @@ public class UserServiceImpl extends AbstractCRUDService<User, Long> implements 
             case TEACHER -> {
                 TeacherProfile tp = new TeacherProfile();
                 tp.setUser(saved);
-                tp.setAcademicTitle(null); // can be updated later
+                tp.setAcademicTitle(null);
                 teacherProfileRepo.save(tp);
             }
             case ADMINISTRATOR -> {
@@ -111,22 +129,13 @@ public class UserServiceImpl extends AbstractCRUDService<User, Long> implements 
     }
 
     @Override
+    @Cacheable(cacheNames = "userByUsername", key = "#username")
     public User findByUsername(String username) {
-        // prefer first, fallback to list to avoid exception
         return userRepo.findFirstByUsernameIgnoreCase(username).orElseGet(() -> userRepo.findByUsernameIgnoreCase(username).stream().findFirst().orElseThrow());
     }
 
     @Override
-    public boolean existsByUsername(String username) {
-        return userRepo.existsByUsernameIgnoreCase(username);
-    }
-
-    @Override
-    public boolean hasAnyUser() {
-        return userRepo.count() > 0;
-    }
-
-    @Override
+    @Cacheable(cacheNames = "availableCourses", key = "#userId")
     public List<Course> findAvailableCoursesForUser(Long userId) {
         User user = userRepo.findById(userId).orElseThrow();
         Optional<StudentProfile> sp = studentProfileRepo.findByUserId(user.getId());
@@ -137,9 +146,50 @@ public class UserServiceImpl extends AbstractCRUDService<User, Long> implements 
     }
 
     @Override
+    @Cacheable(cacheNames = "coursesByTeacher", key = "#teacherId")
+    public List<Course> findCoursesForTeacher(Long teacherId) {
+        return StreamSupport.stream(courseRepo.findAll().spliterator(), false)
+                .filter(course -> course.getTeachers().stream().anyMatch(t -> t.getId().equals(teacherId)))
+                .toList();
+    }
+
+    @Override
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "userByUsername", allEntries = true),
+            @CacheEvict(cacheNames = "availableCourses", allEntries = true),
+            @CacheEvict(cacheNames = "coursesByTeacher", allEntries = true)
+    })
     public void delete(Long id) {
-        fileSubmissionDocRepo.deleteAll(fileSubmissionDocRepo.findByUserId(id));
-        testSubmissionDocRepo.deleteAll(testSubmissionDocRepo.findByUserId(id));
+        try {
+            fileSubmissionDocRepo.deleteAll(fileSubmissionDocRepo.findByUserId(id));
+        } catch (Exception e) {
+            log.warn("Failed to delete file submissions for user {} from MongoDB: {}", id, e.getMessage());
+        }
+        try {
+            testSubmissionDocRepo.deleteAll(testSubmissionDocRepo.findByUserId(id));
+        } catch (Exception e) {
+            log.warn("Failed to delete test submissions for user {} from MongoDB: {}", id, e.getMessage());
+        }
+        CourseRepo repo = courseRepo;
+        StreamSupport.stream(repo.findAll().spliterator(), false)
+            .filter(course -> course.getTeachers().stream().anyMatch(t -> t.getId().equals(id)))
+            .forEach(course -> {
+                course.getTeachers().removeIf(t -> t.getId().equals(id));
+                repo.save(course);
+            });
+        teacherProfileRepo.findByUserId(id).ifPresent(teacherProfileRepo::delete);
+        studentProfileRepo.findByUserId(id).ifPresent(studentProfileRepo::delete);
+        adminProfileRepo.findByUserId(id).ifPresent(adminProfileRepo::delete);
         getRepository().deleteById(id);
+    }
+
+    @Override
+    public boolean existsByUsername(String username) {
+        return userRepo.existsByUsernameIgnoreCase(username);
+    }
+
+    @Override
+    public boolean hasAnyUser() {
+        return userRepo.count() > 0;
     }
 }

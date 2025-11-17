@@ -39,6 +39,13 @@ services:
     volumes:
       - mongodata:/data/db
 
+  redis:
+    image: redis:7
+    container_name: vle-redis
+    restart: always
+    ports:
+      - "6379:6379"
+
   app:
     build: .
     image: vleapi:latest
@@ -49,17 +56,20 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/vle
       SPRING_DATASOURCE_USERNAME: vle-admin
       SPRING_DATASOURCE_PASSWORD: vle-admin-password
-      SPRING_DATA_MONGODB_URI: mongodb://vle-mongo-admin:vle-mongo-password@mongodb:27017/vle
+      SPRING_DATA_MONGODB_URI: mongodb://vle-mongo-admin:vle-mongo-password@mongodb:27017/vle?authSource=admin
       JWT_SECRET: super-secret-key-vle-ultra-123456789012345678s901234
       CLOUD_S3_BUCKET: vle-service-upload
       CLOUD_AWS_CREDENTIALS_ACCESS_KEY: AKIA2YWWLLT5KV43NK2N
       CLOUD_AWS_CREDENTIALS_SECRET_KEY: dummy
       ADMIN_BOOTSTRAP_SECRET: bootstrap-super-duper-secret-knalis-key
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     ports:
       - "8060:8080"
     depends_on:
       - postgres
       - mongodb
+      - redis
 
 volumes:
   pgdata:

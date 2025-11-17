@@ -12,11 +12,16 @@ import dev.knalis.vleapi.model.entity.Group;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import jakarta.validation.Valid;
 
 @Tag(name = "Student Profile", description = "Manage student-specific data (group assignment)")
 @RestController
@@ -40,7 +45,7 @@ public class StudentProfileController {
 
     @Operation(summary = "Assign or unassign group to student", security = @SecurityRequirement(name = "bearerAuth"))
     @PreAuthorize("hasRole('ADMINISTRATOR') or (hasRole('STUDENT') and principal.username == @userService.findById(#userId).username)")
-    @PatchMapping("/{userId}")
+    @PatchMapping("/{userId}/group")
     public ResponseEntity<UserExtendedDto> updateGroup(@PathVariable Long userId, @RequestBody StudentProfileUpdateRequest req) {
         User user = userService.findById(userId);
         if (!user.getRole().name().equals("STUDENT")) {
@@ -58,5 +63,31 @@ public class StudentProfileController {
         studentProfileRepo.save(sp);
         return ResponseEntity.ok(assembler.assemble(user));
     }
-}
 
+    @Operation(summary = "Update student profile", description = "Update fields of student profile (groupId)", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponse(responseCode = "200", description = "Profile updated", content = @Content(mediaType = "application/json", schema = @Schema(implementation = StudentProfile.class)))
+    @ApiResponse(responseCode = "400", description = "Bad request", content = @Content(mediaType = "application/problem+json"))
+    @PreAuthorize("hasRole('ADMINISTRATOR') or (hasRole('STUDENT') and principal.username == @userService.findById(#userId).username)")
+    @PatchMapping("/{userId}")
+    public ResponseEntity<StudentProfile> patch(@PathVariable Long userId, @Valid @RequestBody StudentProfileUpdateRequest req) {
+        StudentProfile profile = studentProfileRepo.findByUserId(userId).orElseThrow();
+        if (req.getGroupId() != null) {
+            Group group = groupService.findById(req.getGroupId());
+            profile.setGroup(group);
+        }
+        studentProfileRepo.save(profile);
+        return ResponseEntity.ok(profile);
+    }
+
+    @Operation(summary = "Replace student profile", description = "Replace all fields of student profile", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponse(responseCode = "200", description = "Profile replaced", content = @Content(mediaType = "application/json", schema = @Schema(implementation = StudentProfile.class)))
+    @ApiResponse(responseCode = "400", description = "Bad request", content = @Content(mediaType = "application/problem+json"))
+    @PutMapping("/{userId}")
+    public ResponseEntity<StudentProfile> put(@PathVariable Long userId, @Valid @RequestBody StudentProfileUpdateRequest req) {
+        StudentProfile profile = studentProfileRepo.findByUserId(userId).orElseThrow();
+        Group group = req.getGroupId() != null ? groupService.findById(req.getGroupId()) : null;
+        profile.setGroup(group);
+        studentProfileRepo.save(profile);
+        return ResponseEntity.ok(profile);
+    }
+}

@@ -11,6 +11,7 @@ import dev.knalis.vleapi.service.intrf.CourseService;
 import dev.knalis.vleapi.service.intrf.GroupService;
 import dev.knalis.vleapi.service.intrf.TopicService;
 import dev.knalis.vleapi.service.intrf.UserService;
+import dev.knalis.vleapi.exception.custom.AlreadyBoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,14 +33,14 @@ public class ObjectBinder {
         if (user.getRole() != Role.STUDENT) {
             throw new IllegalArgumentException("Only STUDENT users can be bound to a group");
         }
-        if (studentProfileRepo.findByUserId(user.getId()).filter(sp -> sp.getGroup()!=null).isPresent()) {
-            throw new IllegalArgumentException("Student already belongs to a group");
-        }
         StudentProfile sp = studentProfileRepo.findByUserId(user.getId()).orElseGet(() -> {
             StudentProfile created = new StudentProfile();
             created.setUser(user);
             return studentProfileRepo.save(created);
         });
+        if (sp.getGroup() != null && sp.getGroup().getId().equals(groupId)) {
+            return;
+        }
         sp.setGroup(group);
         studentProfileRepo.save(sp);
     }
@@ -48,9 +49,10 @@ public class ObjectBinder {
     public void bindCourseToGroup(Long courseId, Long groupId) {
         Group group = groupService.findById(groupId);
         Course course = courseService.findById(courseId);
-
+        if (group.getCourses().contains(course)) {
+            throw new AlreadyBoundException("Group already bound to course");
+        }
         group.addCourse(course);
-
         courseService.update(course);
         groupService.update(group);
     }

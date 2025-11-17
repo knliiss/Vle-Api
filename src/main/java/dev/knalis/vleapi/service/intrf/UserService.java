@@ -28,4 +28,6 @@ public interface UserService extends CRUDService<User, Long> {
     boolean hasAnyUser();
 
     List<Course> findAvailableCoursesForUser(Long userId);
+
+    List<Course> findCoursesForTeacher(Long teacherId);
 }

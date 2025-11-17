@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 
@@ -22,6 +21,9 @@ public class FileUploadService {
 
     @Value("${cloud.s3.bucket}")
     private String bucket;
+
+    @Value("${cloud.s3.public-base-url:}")
+    private String publicBaseUrl;
 
     public String uploadFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
@@ -38,10 +40,15 @@ public class FileUploadService {
             s3Client.putObject(new PutObjectRequest(bucket, fileName, file.getInputStream(), metadata)
                     .withCannedAcl(CannedAccessControlList.PublicRead));
 
+            if (publicBaseUrl != null && !publicBaseUrl.isBlank()) {
+                return publicBaseUrl.replaceAll("/+$", "") + "/" + fileName;
+            }
             return s3Client.getUrl(bucket, fileName).toString();
 
         } catch (IOException e) {
             throw new RuntimeException("Failed to upload file", e);
+        } catch (Exception e) {
+            throw new RuntimeException("S3 upload failed: " + e.getMessage(), e);
         }
     }
 
@@ -49,10 +56,7 @@ public class FileUploadService {
         if (StringUtils.isNullOrEmpty(fileUrl)) {
             throw new IllegalArgumentException("File URL is empty");
         }
-
         String fileName = fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
         s3Client.deleteObject(bucket, fileName);
     }
-
-
 }

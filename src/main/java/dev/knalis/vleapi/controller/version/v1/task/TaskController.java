@@ -12,21 +12,20 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import dev.knalis.vleapi.model.dto.submission.FileSubmissionDto;
+import dev.knalis.vleapi.model.dto.submission.TestSubmissionDto;
+import dev.knalis.vleapi.service.intrf.SubmissionService;
+import dev.knalis.vleapi.service.intrf.UserService;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import io.swagger.v3.oas.annotations.Parameter;
+import org.springframework.http.ProblemDetail;
 
+import java.util.Map;
 import java.util.List;
 
 import static dev.knalis.vleapi.security.Spel.*;
@@ -42,60 +41,72 @@ public class TaskController extends AbstractCRUDController<Task, TaskDto, TaskDt
     @Autowired
     private TaskEntityMapper taskMapper;
 
-    @Override
-    protected CRUDService<Task, Long> getService() { return taskService; }
+    @Autowired
+    private SubmissionService submissionService;
+
+    @Autowired
+    private UserService userService;
 
     @Override
-    protected ObjectMapper<Task, TaskDto, TaskDto, TaskDto> getMapper() { return taskMapper; }
-
-    @Override
-    protected String getRestUrl() { return "tasks"; }
-
-    @Operation(summary = "Create a task", security = @SecurityRequirement(name = "bearerAuth"))
-    @ApiResponse(responseCode = "201", description = "Task created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = TaskDto.class),
-            examples = {@ExampleObject(value = "{\n  \"name\": \"Homework 1\",\n  \"description\": \"Do problems 1-10\",\n  \"maxMark\": 100,\n  \"dueDate\": \"2025-12-31T23:59:59Z\",\n  \"topicId\": 1\n}")}))
-    @PreAuthorize(HAS_ADMIN + " or (" + CAN_CREATE_TASK + ")")
-    @PostMapping
-    @Override
-    public ResponseEntity<TaskDto> create(@Valid @RequestBody TaskDto request) {
-        return super.create(request);
+    protected CRUDService<Task, Long> getService() {
+        return taskService;
     }
 
-    @Operation(summary = "Get task by id", security = @SecurityRequirement(name = "bearerAuth"))
-    @ApiResponse(responseCode = "200", description = "Task found")
-    @PreAuthorize(HAS_ADMIN + " or (" + CAN_VIEW_TASK + ")")
     @Override
-    @GetMapping("/{id}")
-    public ResponseEntity<TaskDto> findById(@PathVariable Long id) {
-        return super.findById(id);
+    protected ObjectMapper<Task, TaskDto, TaskDto, TaskDto> getMapper() {
+        return taskMapper;
     }
 
-    @Operation(summary = "List all tasks", security = @SecurityRequirement(name = "bearerAuth"))
-    @ApiResponse(responseCode = "200", description = "List of tasks")
-    @PreAuthorize(HAS_ADMIN)
     @Override
-    @GetMapping
-    public ResponseEntity<List<TaskDto>> findAll() {
-        return super.findAll();
+    protected String getRestUrl() {
+        return "tasks";
     }
 
-    @Operation(summary = "Update a task", security = @SecurityRequirement(name = "bearerAuth"))
-    @ApiResponse(responseCode = "200", description = "Task updated", content = @Content(mediaType = "application/json", schema = @Schema(implementation = TaskDto.class),
-            examples = {@ExampleObject(value = "{\n  \"name\": \"Homework 1 - updated\",\n  \"maxMark\": 120\n}")}))
-    @PreAuthorize(HAS_ADMIN + " or (" + CAN_MANAGE_TASK + ")")
-    @PutMapping("/{id}")
-    @Override
-    public ResponseEntity<TaskDto> update(@PathVariable Long id, @Valid @RequestBody TaskDto request) {
-        return super.update(id, request);
+    @Operation(summary = "List tasks for a topic", description = "Returns tasks for the given topic", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponse(responseCode = "200", description = "List of tasks", content = @Content(mediaType = "application/json"))
+    @GetMapping("/by-topic/{topicId}")
+    public ResponseEntity<List<TaskDto>> listByTopic(@PathVariable Long topicId) {
+        List<Task> tasks = taskService.findAll().stream().filter(t -> t.getTopic() != null && topicId.equals(t.getTopic().getId())).toList();
+        List<TaskDto> dtos = tasks.stream().map(taskMapper::toDto).toList();
+        return ResponseEntity.ok(dtos);
     }
 
-    @Operation(summary = "Delete a task", security = @SecurityRequirement(name = "bearerAuth"))
-    @ApiResponse(responseCode = "204", description = "Task deleted")
-    @PreAuthorize(HAS_ADMIN + " or (" + CAN_MANAGE_TASK + ")")
-    @DeleteMapping("/{id}")
-    @Override
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        return super.delete(id);
+    @Operation(summary = "List submissions for a task and user", description = "Returns both file and test submissions for the given task and user. If userId is omitted, the authenticated student's id is used.", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponse(responseCode = "200", description = "Lists of submissions", content = @Content(mediaType = "application/json"))
+    @ApiResponse(responseCode = "400", description = "Bad request", content = @Content(mediaType = "application/problem+json"))
+    @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(mediaType = "application/problem+json"))
+    @PreAuthorize(HAS_STUDENT + " and @accessControl.canSubmitTask(#taskId, principal.username)")
+    @GetMapping("/{taskId}/submissions")
+    public ResponseEntity<?> listTaskSubmissions(
+            @PathVariable Long taskId,
+            @Parameter(description = "Optional user id; if omitted uses authenticated user")
+            @RequestParam(name = "userId", required = false) Long userId) {
+        Task task = taskService.findById(taskId);
+        if (task == null) {
+            ProblemDetail pd = ProblemDetail.forStatus(404);
+            pd.setDetail("Task not found");
+            return ResponseEntity.status(404).body(pd);
+        }
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            ProblemDetail pd = ProblemDetail.forStatus(401);
+            pd.setDetail("Not authenticated");
+            return ResponseEntity.status(401).body(pd);
+        }
+        if (userId == null) {
+            var user = userService.findByUsername(auth.getName());
+            if (user == null) {
+                ProblemDetail pd = ProblemDetail.forStatus(400);
+                pd.setDetail("Unable to resolve current user");
+                return ResponseEntity.badRequest().body(pd);
+            }
+            userId = user.getId();
+        }
+        var fileDocs = submissionService.findFileSubmissionsByTaskAndUser(taskId, userId);
+        var testDocs = submissionService.findTestSubmissionsByTaskAndUser(taskId, userId);
+        var fileDtos = fileDocs.stream().map(d -> { FileSubmissionDto dto = new FileSubmissionDto(); dto.setId(d.getId()); dto.setTaskId(d.getTaskId()); dto.setUserId(d.getUserId()); dto.setSubmitted(d.getSubmitted()); dto.setStatus(d.getStatus()==null?null:d.getStatus().name()); dto.setContentUrl(d.getContentUrl()); dto.setGrade(d.getGrade()); return dto;}).toList();
+        var testDtos = testDocs.stream().map(d -> { TestSubmissionDto dto = new TestSubmissionDto(); dto.setId(d.getId()); dto.setTaskId(d.getTaskId()); dto.setUserId(d.getUserId()); dto.setSubmitted(d.getSubmitted()); dto.setContentUrl(d.getContentUrl()); dto.setContent(d.getContent()); dto.setStatus(d.getStatus()==null?null:d.getStatus().name()); dto.setGrade(d.getGrade()); return dto;}).toList();
+        return ResponseEntity.ok(java.util.Map.of("files", fileDtos, "tests", testDtos));
     }
 
 }

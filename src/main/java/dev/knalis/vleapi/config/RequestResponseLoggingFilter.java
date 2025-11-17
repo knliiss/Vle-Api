@@ -47,16 +47,16 @@ public class RequestResponseLoggingFilter extends OncePerRequestFilter {
             String responseBody = readResponseBody(wrappedResponse);
             int status = wrappedResponse.getStatus();
             
-            logger.info(String.format("{} {}{} principal={} status={} duration={}ms reqSize={} respSize={} reqBody={}",
-                    method,
-                    uri,
-                    (query == null || query.isEmpty()) ? "" : "?" + query,
-                    principalName,
-                    status,
-                    duration,
-                    (requestBody == null ? 0 : requestBody.length()),
-                    (responseBody == null ? 0 : responseBody.length()),
-                    truncate(requestBody)));
+            log.info("{} {}{} principal={} status={} duration={}ms reqSize={} respSize={} reqBody={}",
+                     method,
+                     uri,
+                     (query == null || query.isEmpty()) ? "" : "?" + query,
+                     principalName,
+                     status,
+                     duration,
+                     (requestBody == null ? 0 : requestBody.length()),
+                     (responseBody == null ? 0 : responseBody.length()),
+                     truncate(requestBody));
             
             wrappedResponse.copyBodyToResponse();
         }
@@ -90,4 +90,3 @@ public class RequestResponseLoggingFilter extends OncePerRequestFilter {
         return s.substring(0, Math.max(0, maxPayloadLength - 12)) + "...(truncated)";
     }
 }
-

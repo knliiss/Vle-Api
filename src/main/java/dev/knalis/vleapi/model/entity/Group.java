@@ -1,5 +1,6 @@
 package dev.knalis.vleapi.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -23,6 +24,7 @@ public class Group {
             joinColumns = @JoinColumn(name = "group_id"),
             inverseJoinColumns = @JoinColumn(name = "course_id")
     )
+    @JsonIgnore
     private List<Course> courses = new ArrayList<>();
 
 

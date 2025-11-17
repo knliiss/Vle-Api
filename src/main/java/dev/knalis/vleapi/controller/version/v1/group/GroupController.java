@@ -21,6 +21,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.GetMapping;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.media.Content;
 
 import static dev.knalis.vleapi.security.Spel.HAS_ADMIN;
 
@@ -66,6 +69,22 @@ public class GroupController extends AbstractCRUDController<Group, GroupDto, Gro
     @Override
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return super.delete(id);
+    }
+
+    @Operation(summary = "Get all courses for a group", description = "Returns all courses linked to the group", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponse(responseCode = "200", description = "List of courses", content = @Content(mediaType = "application/json"))
+    @GetMapping("/{id}/courses")
+    public ResponseEntity<?> listCourses(@PathVariable Long id) {
+        Group group = groupService.findById(id);
+        return ResponseEntity.ok(group.getCourses());
+    }
+
+    @Operation(summary = "Get all students for a group", description = "Returns all students in the group", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponse(responseCode = "200", description = "List of students", content = @Content(mediaType = "application/json"))
+    @GetMapping("/{id}/users")
+    public ResponseEntity<?> listStudents(@PathVariable Long id) {
+        Group group = groupService.findById(id);
+        return ResponseEntity.ok(groupService.findStudentsInGroup(id));
     }
 
 }

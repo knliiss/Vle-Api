@@ -6,6 +6,6 @@ import lombok.Data;
 @Data
 public class StudentProfileUpdateRequest {
     @Schema(example = "3", description = "Group id to assign/remove")
-    private Long groupId; // null to unassign
+    private Long groupId;
 }
 

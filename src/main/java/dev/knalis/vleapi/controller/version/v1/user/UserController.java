@@ -1,6 +1,7 @@
 package dev.knalis.vleapi.controller.version.v1.user;
 
 import dev.knalis.vleapi.controller.AbstractCRUDController;
+import dev.knalis.vleapi.exception.custom.UserNotHaveGroupException;
 import dev.knalis.vleapi.mapper.intrf.ObjectMapper;
 import dev.knalis.vleapi.model.dto.user.UserCreateRequest;
 import dev.knalis.vleapi.model.dto.user.UserDto;
@@ -12,6 +13,10 @@ import dev.knalis.vleapi.service.intrf.UserService;
 import dev.knalis.vleapi.mapper.impl.UserEntityMapper;
 import dev.knalis.vleapi.model.dto.user.UserExtendedDto;
 import dev.knalis.vleapi.service.impl.UserProfileAssembler;
+import dev.knalis.vleapi.service.intrf.CourseService;
+import dev.knalis.vleapi.mapper.impl.CourseEntityMapper;
+import dev.knalis.vleapi.model.dto.course.CourseDto;
+import dev.knalis.vleapi.model.entity.user.Role;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,6 +26,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -45,7 +52,13 @@ public class UserController extends AbstractCRUDController<User, UserDto, UserCr
 
     @Autowired
     private UserProfileAssembler profileAssembler;
-    
+
+    @Autowired
+    private CourseService courseService;
+
+    @Autowired
+    private CourseEntityMapper courseEntityMapper;
+
     @Override
     protected CRUDService<User, Long> getService() {
         return userService;
@@ -63,17 +76,33 @@ public class UserController extends AbstractCRUDController<User, UserDto, UserCr
 
     @Operation(summary = "Get available courses for a user", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponse(responseCode = "200", description = "List of courses", content = @Content(mediaType = "application/json", schema = @Schema(implementation = dev.knalis.vleapi.model.dto.course.CourseDto.class)))
+    @ApiResponse(responseCode = "404", description = "User not in group", content = @Content(mediaType = "application/problem+json", schema = @Schema(implementation = org.springframework.http.ProblemDetail.class), examples = @ExampleObject(value = "{\n  \"type\": \"https://http.dev/problems/user-not-in-group\",\n  \"title\": \"User not in group\",\n  \"status\": 404,\n  \"detail\": \"User does not belong to any group\"\n}")))
     @PreAuthorize(HAS_ADMIN + " or hasRole('" + Roles.TEACHER + "') or " + IS_SELF_BY_PATH_ID)
     @GetMapping("/{id}/courses")
-    public ResponseEntity<List<Course>> getAvailableCourses(@PathVariable Long id) {
-        if (id == null || id <= 0) {
-            return ResponseEntity.badRequest().body(null);
+    public ResponseEntity<?> getAvailableCourses(@PathVariable Long id) {
+        try {
+            User target = userService.findById(id);
+            Role role = target.getRole();
+            if (role == Role.STUDENT) {
+                List<Course> courses = userService.findAvailableCoursesForUser(id);
+                List<CourseDto> dto = courses.stream().map(courseEntityMapper::toDto).toList();
+                return ResponseEntity.ok(dto);
+            } else if (role == Role.TEACHER) {
+                List<Course> courses = userService.findCoursesForTeacher(id);
+                List<CourseDto> dto = courses.stream().map(courseEntityMapper::toDto).toList();
+                return ResponseEntity.ok(dto);
+            } else if (role == Role.ADMINISTRATOR) {
+                List<Course> courses = courseService.findAll();
+                List<CourseDto> dto = courses.stream().map(courseEntityMapper::toDto).toList();
+                return ResponseEntity.ok(dto);
+            } else {
+                return ResponseEntity.badRequest().body(ProblemDetail.forStatusAndDetail(HttpStatusCode.valueOf(400), "Unsupported role"));
+            }
+        } catch (dev.knalis.vleapi.exception.custom.UserNotHaveGroupException e) {
+            var problem = org.springframework.http.ProblemDetail.forStatus(org.springframework.http.HttpStatus.NOT_FOUND);
+            problem.setDetail("User does not belong to any group");
+            return ResponseEntity.status(404).body(problem);
         }
-        List<Course> courses = userService.findAvailableCoursesForUser(id);
-        if (courses == null || courses.isEmpty()) {
-            return ResponseEntity.status(404).body(null);
-        }
-        return ResponseEntity.ok(courses);
     }
 
     @Operation(summary = "Create a new user", description = "Creates a user. Group assignment is optional.", security = @SecurityRequirement(name = "bearerAuth"))

@@ -5,10 +5,16 @@ import dev.knalis.vleapi.model.dto.user.UserCreateRequest;
 import dev.knalis.vleapi.model.dto.user.UserUpdateRequest;
 import dev.knalis.vleapi.model.dto.user.UserDto;
 import dev.knalis.vleapi.model.entity.user.User;
+import dev.knalis.vleapi.model.entity.user.Role;
+import dev.knalis.vleapi.repo.StudentProfileRepo;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class UserEntityMapper implements ObjectMapper<User, UserDto, UserCreateRequest, UserUpdateRequest> {
+
+    @Autowired
+    private StudentProfileRepo studentProfileRepo;
 
     @Override
     public UserDto toDto(User entity) {
@@ -19,6 +25,14 @@ public class UserEntityMapper implements ObjectMapper<User, UserDto, UserCreateR
         dto.setAvatarUrl(entity.getAvatarUrl());
         dto.setRole(entity.getRole() == null ? null : entity.getRole().name());
         dto.setFio(entity.getFio());
+        if (entity.getRole() == Role.STUDENT) {
+            studentProfileRepo.findByUserId(entity.getId())
+                    .ifPresent(sp -> {
+                        if (sp.getGroup() != null) {
+                            dto.setGroupId(sp.getGroup().getId());
+                        }
+                    });
+        }
         return dto;
     }
 
@@ -29,9 +43,9 @@ public class UserEntityMapper implements ObjectMapper<User, UserDto, UserCreateR
         u.setPassword(dto.getPassword());
         u.setFio(dto.getFio());
         if (dto.getRole() != null) {
-            u.setRole(dev.knalis.vleapi.model.entity.user.Role.fromString(dto.getRole()));
+            u.setRole(Role.fromString(dto.getRole()));
         } else {
-            u.setRole(dev.knalis.vleapi.model.entity.user.Role.STUDENT);
+            u.setRole(Role.STUDENT);
         }
         return u;
     }
@@ -41,6 +55,5 @@ public class UserEntityMapper implements ObjectMapper<User, UserDto, UserCreateR
         if (updateRequest.getAvatarUrl() != null) entity.setAvatarUrl(updateRequest.getAvatarUrl());
         if (updateRequest.getPassword() != null) entity.setPassword(updateRequest.getPassword());
         if (updateRequest.getFio() != null) entity.setFio(updateRequest.getFio());
-        // group update removed; handled via StudentProfile service
     }
 }

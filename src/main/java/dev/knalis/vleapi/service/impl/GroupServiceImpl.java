@@ -1,17 +1,25 @@
 package dev.knalis.vleapi.service.impl;
 
 import dev.knalis.vleapi.model.entity.Group;
+import dev.knalis.vleapi.model.entity.user.StudentProfile;
 import dev.knalis.vleapi.repo.GroupRepo;
+import dev.knalis.vleapi.repo.StudentProfileRepo;
 import dev.knalis.vleapi.service.intrf.GroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.StreamSupport;
 
 @Service
 public class GroupServiceImpl extends AbstractCRUDService<Group, Long> implements GroupService {
 
     @Autowired
     private GroupRepo groupRepo;
+
+    @Autowired
+    private StudentProfileRepo studentProfileRepo;
 
     @Override
     CrudRepository<Group, Long> getRepository() {
@@ -36,5 +44,12 @@ public class GroupServiceImpl extends AbstractCRUDService<Group, Long> implement
     @Override
     public Long getId(Group created) {
         return created.getId();
+    }
+
+    @Override
+    public List<StudentProfile> findStudentsInGroup(Long groupId) {
+        return StreamSupport.stream(studentProfileRepo.findAll().spliterator(), false)
+                .filter(sp -> sp.getGroup() != null && sp.getGroup().getId().equals(groupId))
+                .toList();
     }
 }

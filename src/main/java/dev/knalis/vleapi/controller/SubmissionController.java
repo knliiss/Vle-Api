@@ -15,7 +15,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.ProblemDetail;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -185,5 +184,6 @@ public class SubmissionController {
         var d = opt.get(); TestSubmissionDto dto = new TestSubmissionDto(); dto.setId(d.getId()); dto.setTaskId(d.getTaskId()); dto.setUserId(d.getUserId()); dto.setSubmitted(d.getSubmitted()); dto.setContentUrl(d.getContentUrl()); dto.setContent(d.getContent()); dto.setGrade(d.getGrade());
         return ResponseEntity.ok(dto);
     }
+
 
 }

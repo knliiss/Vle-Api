@@ -17,8 +17,7 @@ public class User {
     private String password;
 
     private String avatarUrl;
-
-    // Full name (ФИО)
+    
     private String fio;
 
     @Enumerated(EnumType.STRING)

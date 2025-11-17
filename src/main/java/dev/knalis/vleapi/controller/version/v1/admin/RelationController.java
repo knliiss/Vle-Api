@@ -25,72 +25,48 @@ public class RelationController {
     @PreAuthorize("hasRole('ADMINISTRATOR')")
     @PostMapping("/user/{userId}/group/{groupId}")
     public ResponseEntity<Void> bindUserToGroup(@PathVariable Long userId, @PathVariable Long groupId) {
-        try {
-            objectBinder.bindUserToGroup(userId, groupId);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
+        objectBinder.bindUserToGroup(userId, groupId);
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "Unbind user from group", security = @SecurityRequirement(name = "bearerAuth"))
     @PreAuthorize("hasRole('ADMINISTRATOR')")
     @DeleteMapping("/user/{userId}/group/{groupId}")
     public ResponseEntity<Void> unbindUserFromGroup(@PathVariable Long userId, @PathVariable Long groupId) {
-        try {
-            objectBinder.unbindUserFromGroup(userId, groupId);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
+        objectBinder.unbindUserFromGroup(userId, groupId);
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "Bind course to group", security = @SecurityRequirement(name = "bearerAuth"))
     @PreAuthorize("hasRole('ADMINISTRATOR')")
     @PostMapping("/course/{courseId}/group/{groupId}")
     public ResponseEntity<Void> bindCourseToGroup(@PathVariable Long courseId, @PathVariable Long groupId) {
-        try {
-            objectBinder.bindCourseToGroup(courseId, groupId);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
+        objectBinder.bindCourseToGroup(courseId, groupId);
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "Unbind course from group", security = @SecurityRequirement(name = "bearerAuth"))
     @PreAuthorize("hasRole('ADMINISTRATOR')")
     @DeleteMapping("/course/{courseId}/group/{groupId}")
     public ResponseEntity<Void> unbindCourseFromGroup(@PathVariable Long courseId, @PathVariable Long groupId) {
-        try {
-            objectBinder.unbindCourseFromGroup(courseId, groupId);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
+        objectBinder.unbindCourseFromGroup(courseId, groupId);
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "Bind topic to course", security = @SecurityRequirement(name = "bearerAuth"))
     @PreAuthorize("hasRole('ADMINISTRATOR')")
     @PostMapping("/topic/{topicId}/course/{courseId}")
     public ResponseEntity<Void> bindTopicToCourse(@PathVariable Long topicId, @PathVariable Long courseId) {
-        try {
-            objectBinder.bindTopicToCourse(topicId, courseId);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
+        objectBinder.bindTopicToCourse(topicId, courseId);
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "Unbind topic from course", security = @SecurityRequirement(name = "bearerAuth"))
     @PreAuthorize("hasRole('ADMINISTRATOR')")
     @DeleteMapping("/topic/{topicId}/course/{courseId}")
     public ResponseEntity<Void> unbindTopicFromCourse(@PathVariable Long topicId, @PathVariable Long courseId) {
-        try {
-            objectBinder.unbindTopicFromCourse(topicId, courseId);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
+        objectBinder.unbindTopicFromCourse(topicId, courseId);
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "Bind teacher to course", security = @SecurityRequirement(name = "bearerAuth"))
@@ -98,12 +74,8 @@ public class RelationController {
     @PreAuthorize("hasRole('ADMINISTRATOR')")
     @PostMapping(value = "/teacher/{teacherId}/course/{courseId}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> bindTeacherToCourse(@PathVariable Long teacherId, @PathVariable Long courseId) {
-        try {
-            objectBinder.bindTeacherToCourse(teacherId, courseId);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
+        objectBinder.bindTeacherToCourse(teacherId, courseId);
+        return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "Unbind teacher from course", security = @SecurityRequirement(name = "bearerAuth"))
@@ -111,12 +83,8 @@ public class RelationController {
     @PreAuthorize("hasRole('ADMINISTRATOR')")
     @DeleteMapping("/teacher/{teacherId}/course/{courseId}")
     public ResponseEntity<Void> unbindTeacherFromCourse(@PathVariable Long teacherId, @PathVariable Long courseId) {
-        try {
-            objectBinder.unbindTeacherFromCourse(teacherId, courseId);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
+        objectBinder.unbindTeacherFromCourse(teacherId, courseId);
+        return ResponseEntity.noContent().build();
     }
 
 }
