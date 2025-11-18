@@ -71,15 +71,16 @@ public class TaskController extends AbstractCRUDController<Task, TaskDto, TaskDt
         return ResponseEntity.ok(dtos);
     }
 
-    @Operation(summary = "List submissions for a task and user", description = "Returns both file and test submissions for the given task and user. If userId is omitted, the authenticated student's id is used.", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "List submissions for a task and user", description = "Returns both file and test submissions for the given task and user. If userId is omitted, the authenticated student's id is used. Teachers/Admins must specify userId explicitly.", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponse(responseCode = "200", description = "Lists of submissions", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "400", description = "Bad request", content = @Content(mediaType = "application/problem+json"))
     @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(mediaType = "application/problem+json"))
-    @PreAuthorize(HAS_STUDENT + " and @accessControl.canSubmitTask(#taskId, principal.username)")
+    @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content(mediaType = "application/problem+json"))
+    @PreAuthorize("(" + HAS_STUDENT + " and @accessControl.canSubmitTask(#taskId, principal.username)) or ((" + HAS_TEACHER + " or " + HAS_ADMIN + ") and @accessControl.canViewTask(#taskId, principal.username))")
     @GetMapping("/{taskId}/submissions")
     public ResponseEntity<?> listTaskSubmissions(
             @PathVariable Long taskId,
-            @Parameter(description = "Optional user id; if omitted uses authenticated user")
+            @Parameter(description = "Optional user id; if omitted uses authenticated student user id, but is REQUIRED for teacher/admin")
             @RequestParam(name = "userId", required = false) Long userId) {
         Task task = taskService.findById(taskId);
         if (task == null) {
@@ -93,20 +94,37 @@ public class TaskController extends AbstractCRUDController<Task, TaskDto, TaskDt
             pd.setDetail("Not authenticated");
             return ResponseEntity.status(401).body(pd);
         }
+        boolean isTeacherOrAdmin = auth.getAuthorities().stream().anyMatch(a -> {
+            String r = a.getAuthority();
+            return "ROLE_TEACHER".equals(r) || "ROLE_ADMINISTRATOR".equals(r);
+        });
+        boolean isStudent = auth.getAuthorities().stream().anyMatch(a -> "ROLE_STUDENT".equals(a.getAuthority()));
         if (userId == null) {
-            var user = userService.findByUsername(auth.getName());
-            if (user == null) {
+            if (isTeacherOrAdmin) {
                 ProblemDetail pd = ProblemDetail.forStatus(400);
-                pd.setDetail("Unable to resolve current user");
+                pd.setDetail("userId parameter is required for teacher/admin");
                 return ResponseEntity.badRequest().body(pd);
             }
-            userId = user.getId();
+            if (isStudent) {
+                var user = userService.findByUsername(auth.getName());
+                if (user == null) {
+                    ProblemDetail pd = ProblemDetail.forStatus(400);
+                    pd.setDetail("Unable to resolve current user");
+                    return ResponseEntity.badRequest().body(pd);
+                }
+                userId = user.getId();
+            }
+        }
+        if (userId == null) {
+            ProblemDetail pd = ProblemDetail.forStatus(400);
+            pd.setDetail("userId could not be resolved");
+            return ResponseEntity.badRequest().body(pd);
         }
         var fileDocs = submissionService.findFileSubmissionsByTaskAndUser(taskId, userId);
         var testDocs = submissionService.findTestSubmissionsByTaskAndUser(taskId, userId);
         var fileDtos = fileDocs.stream().map(d -> { FileSubmissionDto dto = new FileSubmissionDto(); dto.setId(d.getId()); dto.setTaskId(d.getTaskId()); dto.setUserId(d.getUserId()); dto.setSubmitted(d.getSubmitted()); dto.setStatus(d.getStatus()==null?null:d.getStatus().name()); dto.setContentUrl(d.getContentUrl()); dto.setGrade(d.getGrade()); return dto;}).toList();
         var testDtos = testDocs.stream().map(d -> { TestSubmissionDto dto = new TestSubmissionDto(); dto.setId(d.getId()); dto.setTaskId(d.getTaskId()); dto.setUserId(d.getUserId()); dto.setSubmitted(d.getSubmitted()); dto.setContentUrl(d.getContentUrl()); dto.setContent(d.getContent()); dto.setStatus(d.getStatus()==null?null:d.getStatus().name()); dto.setGrade(d.getGrade()); return dto;}).toList();
-        return ResponseEntity.ok(java.util.Map.of("files", fileDtos, "tests", testDtos));
+        return ResponseEntity.ok(Map.of("files", fileDtos, "tests", testDtos));
     }
 
 }
