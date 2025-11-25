@@ -11,5 +11,5 @@ public interface FileSubmissionDocRepo extends MongoRepository<FileSubmissionDoc
     List<FileSubmissionDoc> findByTaskId(Long taskId);
     List<FileSubmissionDoc> findByTaskIdAndUserId(Long taskId, Long userId);
     List<FileSubmissionDoc> findByUserId(Long userId);
+    List<FileSubmissionDoc> findByTaskIdIn(List<Long> taskIds);
 }
-

@@ -1,4 +1,4 @@
-package dev.knalis.vleapi.mapper.impl;
+ package dev.knalis.vleapi.mapper.impl;
 
 import dev.knalis.vleapi.mapper.intrf.ObjectMapper;
 import dev.knalis.vleapi.model.dto.course.CourseDto;

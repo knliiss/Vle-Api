@@ -141,7 +141,8 @@ public class SubmissionController {
 
     @Operation(summary = "List my file submissions", security = @SecurityRequirement(name = "bearerAuth"), description = "List file submissions belonging to the authenticated student.")
     @ApiResponse(responseCode = "200", description = "List of file submissions")
-    @PreAuthorize(HAS_STUDENT + " and " + IS_SELF_BY_PATH_ID)
+    // Allow ADMIN or TEACHER to list any user's files, or allow STUDENT to list their own
+    @PreAuthorize(HAS_ADMIN + " or " + HAS_TEACHER + " or (" + HAS_STUDENT + " and " + IS_SELF_BY_PATH_ID + ")")
     @GetMapping("/user/{id}/files")
     public ResponseEntity<List<FileSubmissionDto>> listMyFileSubmissions(@PathVariable Long id) {
         var docs = submissionService.findFileSubmissionsByUser(id);
@@ -151,7 +152,8 @@ public class SubmissionController {
 
     @Operation(summary = "List my test submissions", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponse(responseCode = "200", description = "List of test submissions")
-    @PreAuthorize(HAS_STUDENT + " and " + IS_SELF_BY_PATH_ID)
+    // Allow ADMIN or TEACHER to list any user's tests, or allow STUDENT to list their own
+    @PreAuthorize(HAS_ADMIN + " or " + HAS_TEACHER + " or (" + HAS_STUDENT + " and " + IS_SELF_BY_PATH_ID + ")")
     @GetMapping("/user/{id}/tests")
     public ResponseEntity<List<TestSubmissionDto>> listMyTestSubmissions(@PathVariable Long id) {
         var docs = submissionService.findTestSubmissionsByUser(id);

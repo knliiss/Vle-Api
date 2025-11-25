@@ -28,4 +28,9 @@ public interface SubmissionService {
     Optional<FileSubmissionDoc> findFileSubmissionById(String id);
 
     Optional<TestSubmissionDoc> findTestSubmissionById(String id);
+
+    // New: find submissions that belong to tasks that are part of a course
+    List<FileSubmissionDoc> findFileSubmissionsByCourseId(Long courseId);
+
+    List<TestSubmissionDoc> findTestSubmissionsByCourseId(Long courseId);
 }

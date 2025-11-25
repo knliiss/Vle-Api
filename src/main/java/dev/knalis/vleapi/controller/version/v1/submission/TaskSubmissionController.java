@@ -2,6 +2,8 @@ package dev.knalis.vleapi.controller.version.v1.submission;
 
 import dev.knalis.vleapi.model.document.FileSubmissionDoc;
 import dev.knalis.vleapi.model.document.TestSubmissionDoc;
+import dev.knalis.vleapi.model.dto.submission.FileSubmissionDto;
+import dev.knalis.vleapi.model.dto.submission.TestSubmissionDto;
 import dev.knalis.vleapi.service.intrf.SubmissionService;
 import dev.knalis.vleapi.service.intrf.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -90,4 +92,64 @@ public class TaskSubmissionController {
         });
     }
 
+    @Operation(summary = "Get submissions for a task", description = "STUDENT: own submissions; TEACHER/ADMIN: require userId param", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponse(responseCode = "200", description = "List of submissions for task by user", content = @Content(mediaType = "application/json"))
+    @ApiResponse(responseCode = "400", description = "Missing userId for TEACHER/ADMIN")
+    @PreAuthorize("hasRole('STUDENT') or hasRole('TEACHER') or hasRole('ADMINISTRATOR')")
+    @GetMapping("/tasks/{taskId}/submissions")
+    public ResponseEntity<?> getTaskSubmissions(@PathVariable Long taskId,
+                                                @RequestParam(required = false) Long userId,
+                                                Authentication authentication) {
+        var user = userService.findByUsername(authentication.getName());
+        String role = user.getRole().name();
+        boolean isStudent = "STUDENT".equals(role);
+        boolean isTeacherOrAdmin = "TEACHER".equals(role) || "ADMINISTRATOR".equals(role);
+
+        Long effectiveUserId;
+        if (isStudent) {
+            effectiveUserId = user.getId();
+        } else if (isTeacherOrAdmin) {
+            if (userId == null) {
+                return ResponseEntity.badRequest().body("userId is required for TEACHER/ADMIN");
+            }
+            effectiveUserId = userId;
+        } else {
+            return ResponseEntity.status(403).build();
+        }
+
+        List<FileSubmissionDoc> fileDocs = submissionService.findFileSubmissionsByTaskAndUser(taskId, effectiveUserId);
+        List<TestSubmissionDoc> testDocs = submissionService.findTestSubmissionsByTaskAndUser(taskId, effectiveUserId);
+
+        var response = new Object() {
+            public final List<FileSubmissionDto> files = fileDocs.stream().map(TaskSubmissionController.this::toFileDto).toList();
+            public final List<TestSubmissionDto> tests = testDocs.stream().map(TaskSubmissionController.this::toTestDto).toList();
+        };
+
+        return ResponseEntity.ok(response);
+    }
+
+    private FileSubmissionDto toFileDto(FileSubmissionDoc d) {
+        FileSubmissionDto dto = new FileSubmissionDto();
+        dto.setId(d.getId());
+        dto.setTaskId(d.getTaskId());
+        dto.setUserId(d.getUserId());
+        dto.setSubmitted(d.getSubmitted());
+        dto.setStatus(d.getStatus() == null ? null : d.getStatus().name());
+        dto.setContentUrl(d.getContentUrl());
+        dto.setGrade(d.getGrade());
+        return dto;
+    }
+
+    private TestSubmissionDto toTestDto(TestSubmissionDoc d) {
+        TestSubmissionDto dto = new TestSubmissionDto();
+        dto.setId(d.getId());
+        dto.setTaskId(d.getTaskId());
+        dto.setUserId(d.getUserId());
+        dto.setSubmitted(d.getSubmitted());
+        dto.setStatus(d.getStatus() == null ? null : d.getStatus().name());
+        dto.setGrade(d.getGrade());
+        dto.setContent(d.getContent());
+        dto.setContentUrl(d.getContentUrl());
+        return dto;
+    }
 }

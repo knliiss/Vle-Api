@@ -6,16 +6,19 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 
 @Data
-public class FileSubmissionDto {
+public class CombinedSubmissionDto {
     private String id;
     private Long taskId;
     private Long userId;
     private LocalDateTime submitted;
-    @Schema(description = "Submission status", allowableValues = {"ADDED","OVERDUE","GRADED","RETURNED","REMOVED"})
     private String status;
-    private String contentUrl;
     private Double grade;
+
     private String fileName;
+    private String contentUrl;
     private String mimeType;
     private Long size;
+
+    private Object content;
 }
+

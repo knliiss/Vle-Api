@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +18,9 @@ public class Group {
     private Long id;
 
     private String name;
+
+    @Column(name = "year", nullable = false)
+    private Integer year;
 
     @ManyToMany
     @JoinTable(
@@ -40,6 +44,13 @@ public class Group {
     public void removeCourse(Course course) {
         this.courses.remove(course);
         course.getGroups().remove(this);
+    }
+
+    @PrePersist
+    public void ensureYear() {
+        if (this.year == null) {
+            this.year = Year.now().getValue();
+        }
     }
 
 }

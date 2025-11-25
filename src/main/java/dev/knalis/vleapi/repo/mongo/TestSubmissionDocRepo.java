@@ -11,5 +11,5 @@ public interface TestSubmissionDocRepo extends MongoRepository<TestSubmissionDoc
     List<TestSubmissionDoc> findByTaskId(Long taskId);
     List<TestSubmissionDoc> findByTaskIdAndUserId(Long taskId, Long userId);
     List<TestSubmissionDoc> findByUserId(Long userId);
+    List<TestSubmissionDoc> findByTaskIdIn(List<Long> taskIds);
 }
-

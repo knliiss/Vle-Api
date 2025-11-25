@@ -1,13 +1,19 @@
 package dev.knalis.vleapi.controller.version.v1.topic;
 
+import dev.knalis.vleapi.controller.AbstractCRUDController;
+import dev.knalis.vleapi.mapper.intrf.ObjectMapper;
 import dev.knalis.vleapi.model.entity.Topic;
+import dev.knalis.vleapi.service.intrf.CRUDService;
 import dev.knalis.vleapi.service.intrf.TopicService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.media.Content;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,27 +27,28 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import java.util.List;
 
 import static dev.knalis.vleapi.security.Spel.CAN_VIEW_TOPIC;
+import static dev.knalis.vleapi.security.Spel.HAS_ADMIN;
 
 @Tag(name = "Topics", description = "Topic management and relations")
 @RestController
 @RequestMapping("/api/v1/topics")
-public class TopicController {
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+public class TopicController extends AbstractCRUDController<Topic, TopicDto, TopicDto, TopicDto, Long> {
 
-    @Autowired
     private TopicService topicService;
 
-    @Autowired
     private TopicEntityMapper topicMapper;
-
-    @Autowired
+    
     private TaskEntityMapper taskMapper;
 
     @Operation(summary = "Get topic by id", description = "Returns a topic by id", security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponse(responseCode = "200", description = "Topic found", content = @Content(mediaType = "application/json", schema = @Schema(implementation = TopicDto.class)))
     @ApiResponse(responseCode = "404", description = "Topic not found", content = @Content(mediaType = "application/json"))
     @PreAuthorize(CAN_VIEW_TOPIC)
+    @Override
     @GetMapping("/{id}")
-    public ResponseEntity<?> getTopic(@PathVariable Long id) {
+    public ResponseEntity<TopicDto> findById(@PathVariable Long id) {
         Topic topic = topicService.findById(id);
         if (topic == null) {
             return ResponseEntity.status(404).body(null);
@@ -63,10 +70,27 @@ public class TopicController {
         return ResponseEntity.ok(taskDtos);
     }
 
-    @Operation(summary = "Get all topics", description = "Returns all topics", security = @SecurityRequirement(name = "bearerAuth"))
-    @ApiResponse(responseCode = "200", description = "List of topics", content = @Content(mediaType = "application/json"))
-    @GetMapping
-    public ResponseEntity<?> listTopics() {
-        return ResponseEntity.ok(topicService.findAll());
+    @Operation(summary = "Create a topic", security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponse(responseCode = "201", description = "Topic created", content = @Content(mediaType = "application/json", schema = @Schema(implementation = dev.knalis.vleapi.model.dto.topic.TopicDto.class)))
+    @PreAuthorize(HAS_ADMIN)
+    @Override
+    @PostMapping
+    public ResponseEntity<TopicDto> create(@Valid @RequestBody TopicDto request) {
+        return super.create(request);
+    }
+    
+    @Override
+    protected CRUDService getService() {
+        return topicService;
+    }
+    
+    @Override
+    protected ObjectMapper getMapper() {
+        return topicMapper;
+    }
+    
+    @Override
+    protected String getRestUrl() {
+        return "/api/v1/topics";
     }
 }

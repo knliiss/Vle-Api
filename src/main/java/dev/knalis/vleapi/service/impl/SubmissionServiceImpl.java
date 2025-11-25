@@ -16,6 +16,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 public class SubmissionServiceImpl implements SubmissionService {
@@ -118,4 +120,27 @@ public class SubmissionServiceImpl implements SubmissionService {
     public Optional<TestSubmissionDoc> findTestSubmissionById(String id) {
         return testSubmissionDocRepo.findById(id);
     }
+
+    @Override
+    public List<FileSubmissionDoc> findFileSubmissionsByCourseId(Long courseId) {
+        // find all task ids that belong to the course
+        List<Long> taskIds = StreamSupport.stream(taskRepo.findAll().spliterator(), false)
+                .filter(t -> t.getTopic() != null && t.getTopic().getCourse() != null && courseId.equals(t.getTopic().getCourse().getId()))
+                .map(Task::getId)
+                .collect(Collectors.toList());
+        if (taskIds.isEmpty()) return List.of();
+        // find file submissions for these task ids
+        return fileSubmissionDocRepo.findByTaskIdIn(taskIds);
+    }
+
+    @Override
+    public List<TestSubmissionDoc> findTestSubmissionsByCourseId(Long courseId) {
+        List<Long> taskIds = StreamSupport.stream(taskRepo.findAll().spliterator(), false)
+                .filter(t -> t.getTopic() != null && t.getTopic().getCourse() != null && courseId.equals(t.getTopic().getCourse().getId()))
+                .map(Task::getId)
+                .collect(Collectors.toList());
+        if (taskIds.isEmpty()) return List.of();
+        return testSubmissionDocRepo.findByTaskIdIn(taskIds);
+    }
+
 }
