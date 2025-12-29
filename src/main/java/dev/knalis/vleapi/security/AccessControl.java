@@ -202,4 +202,14 @@ public class AccessControl {
             return false;
         }
     }
+    
+    public boolean isSelf(Long userId, String username) {
+        try {
+            return userRepo.findById(userId)
+                    .map(u -> u.getUsername() != null && u.getUsername().equalsIgnoreCase(username))
+                    .orElse(false);
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }

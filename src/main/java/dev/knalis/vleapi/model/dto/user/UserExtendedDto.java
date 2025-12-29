@@ -10,10 +10,8 @@ public class UserExtendedDto {
     private String role;
     private String fio;
 
-    // Student part
     private Long groupId;
 
-    // Teacher part
     private String academicTitle;
     private String department;
     private String workPhone;

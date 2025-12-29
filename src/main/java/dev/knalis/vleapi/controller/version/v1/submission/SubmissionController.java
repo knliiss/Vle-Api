@@ -24,7 +24,7 @@ import java.util.Optional;
 @Tag(name = "Submissions (v1)", description = "Endpoints for student submissions (test & file) and grading")
 @RestController
 @RequestMapping("/api/v1/submissions-ext")
-class SubmissionV1Controller {
+class SubmissionController {
 
     @Autowired private SubmissionService submissionService;
     @Autowired private UserService userService;
@@ -111,13 +111,11 @@ class SubmissionV1Controller {
         FileSubmissionDoc doc = opt.get();
         Long taskId = doc.getTaskId();
         String username = auth.getName();
-        // teachers/admins may download if they manage the task
         if (auth.getAuthorities().stream().noneMatch(a -> a.getAuthority().contains("ADMINISTRATOR"))) {
             if (!accessControl.canManageTask(taskId, username) && !username.equals(userService.findById(doc.getUserId()).getUsername())) {
                 return ResponseEntity.status(403).body("Forbidden");
             }
         }
-        // Return redirect to file URL
         return ResponseEntity.status(302).header("Location", doc.getContentUrl()).build();
     }
 }

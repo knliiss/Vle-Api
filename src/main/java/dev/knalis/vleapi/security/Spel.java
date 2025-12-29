@@ -15,6 +15,6 @@ public final class Spel {
     public static final String CAN_MANAGE_TASK   = "@accessControl.canManageTask(#id, principal.username)";
     public static final String CAN_VIEW_TASK     = "@accessControl.canViewTask(#id, principal.username)";
 
-    public static final String IS_SELF_BY_PATH_ID       = "isAuthenticated() and principal.username == @userService.findById(#id).username";
-    public static final String IS_SELF_BY_USERID_PARAM  = "isAuthenticated() and principal.username == @userService.findById(#userId).username";
+    public static final String IS_SELF_BY_PATH_ID       = "isAuthenticated() and @accessControl.isSelf(#id, principal.username)";
+    public static final String IS_SELF_BY_USERID_PARAM  = "isAuthenticated() and @accessControl.isSelf(#userId, principal.username)";
 }

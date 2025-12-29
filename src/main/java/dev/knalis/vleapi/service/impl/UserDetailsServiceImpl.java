@@ -1,6 +1,5 @@
 package dev.knalis.vleapi.service.impl;
 
-import dev.knalis.vleapi.model.entity.user.User;
 import dev.knalis.vleapi.repo.UserRepo;
 import dev.knalis.vleapi.security.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;

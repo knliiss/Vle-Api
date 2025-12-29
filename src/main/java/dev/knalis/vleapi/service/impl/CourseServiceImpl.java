@@ -1,6 +1,7 @@
 package dev.knalis.vleapi.service.impl;
 
 import dev.knalis.vleapi.model.entity.Course;
+import dev.knalis.vleapi.model.entity.Group;
 import dev.knalis.vleapi.model.entity.Topic;
 import dev.knalis.vleapi.model.entity.task.Task;
 import dev.knalis.vleapi.repo.CourseRepo;
@@ -9,6 +10,8 @@ import dev.knalis.vleapi.service.intrf.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 
 @Service
@@ -64,5 +67,20 @@ public class CourseServiceImpl extends AbstractCRUDService<Course, Long> impleme
     @Override
     public Long getId(Course created) {
         return created.getId();
+    }
+
+    @Override
+    public void delete(Long id) {
+        Course course = courseRepo.findById(id).orElse(null);
+        if (course == null) {
+            return;
+        }
+        List<Group> groups = course.getGroups();
+        if (groups != null) {
+            for (Group group : List.copyOf(groups)) {
+                group.getCourses().remove(course);
+            }
+        }
+        courseRepo.delete(course);
     }
 }

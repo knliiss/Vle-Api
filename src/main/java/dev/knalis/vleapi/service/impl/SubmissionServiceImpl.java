@@ -123,13 +123,11 @@ public class SubmissionServiceImpl implements SubmissionService {
 
     @Override
     public List<FileSubmissionDoc> findFileSubmissionsByCourseId(Long courseId) {
-        // find all task ids that belong to the course
         List<Long> taskIds = StreamSupport.stream(taskRepo.findAll().spliterator(), false)
                 .filter(t -> t.getTopic() != null && t.getTopic().getCourse() != null && courseId.equals(t.getTopic().getCourse().getId()))
                 .map(Task::getId)
                 .collect(Collectors.toList());
         if (taskIds.isEmpty()) return List.of();
-        // find file submissions for these task ids
         return fileSubmissionDocRepo.findByTaskIdIn(taskIds);
     }
 

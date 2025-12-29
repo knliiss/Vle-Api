@@ -20,6 +20,7 @@ public class UserCreateRequest {
     @Schema(example = "STUDENT", description = "Role of the user (ADMINISTRATOR, TEACHER, STUDENT). Appropriate profile will be auto-created.")
     private String role;
 
+    @Size(min = 3, max = 100)
     @Schema(example = "Іван Іванович", description = "Full name (ФИО)")
     private String fio;
 }
